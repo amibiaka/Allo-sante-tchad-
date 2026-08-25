@@ -2,7 +2,7 @@
    d'urgence, bandeau demo, invitation a installer la PWA. */
 import { useEffect, useState } from 'react'
 import { useLangue, LANGUES } from '../lib/i18n'
-import { CONFIG, MODE_DEMO } from '../lib/config'
+import { CONFIG, MODE_DEMO, CONFIG_INVALIDE } from '../lib/config'
 import { db } from '../lib/db'
 import { prefs } from '../lib/store'
 import { lienAppel } from '../lib/links'
@@ -116,11 +116,24 @@ function LigneNumero({ n, libelle, t }) {
 
 /* ------------------------------------------------------------------ */
 export function BandeauDemo() {
-  const { t } = useLangue()
+  const { t, langue } = useLangue()
   const [ouvert, setOuvert] = useState(false)
   if (!MODE_DEMO) return null
+  /* Cas particulier : des variables Supabase existent mais ne sont pas
+     valables (gabarit non remplace, adresse mal recopiee). Sans ce
+     bandeau, l'exploitant croit etre en production alors que tout est
+     local. On le dit en clair, en rouge, avant le bandeau demo. */
+  const alerteConfig = CONFIG_INVALIDE && (
+    <div role="alert"
+         className="w-full bg-vital px-3 py-1.5 text-center text-[12px] font-bold text-white">
+      {langue === 'ar'
+        ? '⚠ إعدادات Supabase غير صالحة — التطبيق يعمل محليًا فقط.'
+        : '⚠ Variables Supabase invalides — l’application tourne en local.'}
+    </div>
+  )
   return (
     <>
+      {alerteConfig}
       <button onClick={() => setOuvert(true)}
               className="w-full bg-soleil-300 px-3 py-1.5 text-center text-[12px] font-bold text-soleil-700">
         🧪 {t('demo.banniere')}
