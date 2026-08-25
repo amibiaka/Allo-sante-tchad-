@@ -1109,3 +1109,108 @@ create unique index if not exists uq_numero_urgence
   on numeros_urgence (libelle_fr, coalesce(ville_id, 0));
 
 select 'Etape 1/3 terminee. Lancez maintenant 02_donnees_geo.sql' as resultat;
+
+-- ---------------------------------------------------------------------
+--  Depot patient : passer par une fonction plutot que par un INSERT nu.
+--
+--  PostgREST renvoie la ligne creee avec INSERT ... RETURNING. Postgres
+--  applique alors les politiques SELECT a la ligne retournee : le patient
+--  anonyme n'en a aucune (c'est voulu, il suit son dossier par code), donc
+--  l'insertion partait puis echouait sur le retour avec
+--  « new row violates row-level security policy ». Le patient voyait une
+--  erreur alors que sa demande etait enregistree.
+--
+--  On expose donc une fonction security definer qui insere et renvoie le
+--  seul code de suivi. La liste de colonnes est explicite : l'appelant ne
+--  peut fixer ni le statut, ni le code, ni le drapeau demo.
+-- ---------------------------------------------------------------------
+create or replace function public.creer_demande(p jsonb)
+returns table (code text, id uuid)
+language plpgsql
+security definer
+set search_path = public, extensions
+as $fn$
+declare d demandes%rowtype;
+begin
+  if coalesce((p->>'consentement')::boolean, false) is not true then
+    raise exception 'consentement requis' using errcode = '22023';
+  end if;
+  if (p->>'niveau') is null or (p->>'niveau')::int not between 1 and 4 then
+    raise exception 'niveau invalide' using errcode = '22023';
+  end if;
+
+  insert into demandes (
+    pour_qui, niveau, categories, description, vocal_url, age_approx, sexe,
+    province_id, ville_id, quartier_id, quartier_libre, ville_libre,
+    lieu_texte, lat, lng, contact_tel, contact_whatsapp, contact_visible,
+    consentement
+  ) values (
+    nullif(p->>'pour_qui', ''),
+    (p->>'niveau')::smallint,
+    coalesce((select array_agg(x) from jsonb_array_elements_text(
+               case when jsonb_typeof(p->'categories') = 'array'
+                    then p->'categories' else '[]'::jsonb end) x), '{}'),
+    nullif(p->>'description', ''),
+    nullif(p->>'vocal_url', ''),
+    nullif(p->>'age_approx', ''),
+    nullif(p->>'sexe', ''),
+    (p->>'province_id')::int,
+    (p->>'ville_id')::int,
+    (p->>'quartier_id')::int,
+    nullif(p->>'quartier_libre', ''),
+    nullif(p->>'ville_libre', ''),
+    nullif(p->>'lieu_texte', ''),
+    (p->>'lat')::double precision,
+    (p->>'lng')::double precision,
+    nullif(p->>'contact_tel', ''),
+    nullif(p->>'contact_whatsapp', ''),
+    coalesce((p->>'contact_visible')::boolean, false),
+    true
+  )
+  returning * into d;
+
+  return query select d.code, d.id;
+end $fn$;
+
+create or replace function public.creer_ordonnance(p jsonb)
+returns table (code text, id uuid)
+language plpgsql
+security definer
+set search_path = public, extensions
+as $fn$
+declare o ordonnances%rowtype;
+begin
+  if coalesce((p->>'consentement')::boolean, false) is not true then
+    raise exception 'consentement requis' using errcode = '22023';
+  end if;
+
+  insert into ordonnances (
+    image_url, vocal_url, note, province_id, ville_id, quartier_id,
+    quartier_libre, ville_libre, pharmacie_id, diffusion, contact_tel,
+    livraison_souhaitee, consentement
+  ) values (
+    nullif(p->>'image_url', ''),
+    nullif(p->>'vocal_url', ''),
+    nullif(p->>'note', ''),
+    (p->>'province_id')::int,
+    (p->>'ville_id')::int,
+    (p->>'quartier_id')::int,
+    nullif(p->>'quartier_libre', ''),
+    nullif(p->>'ville_libre', ''),
+    nullif(p->>'pharmacie_id', '')::uuid,
+    coalesce((p->>'diffusion')::boolean, true),
+    nullif(p->>'contact_tel', ''),
+    coalesce((p->>'livraison_souhaitee')::boolean, false),
+    true
+  )
+  returning * into o;
+
+  return query select o.code, o.id;
+end $fn$;
+
+revoke all on function public.creer_demande(jsonb) from public;
+revoke all on function public.creer_ordonnance(jsonb) from public;
+grant execute on function public.creer_demande(jsonb) to anon, authenticated;
+grant execute on function public.creer_ordonnance(jsonb) to anon, authenticated;
+
+select 'Etape 1/3 terminee. Lancez maintenant 02_donnees_geo.sql' as resultat;
