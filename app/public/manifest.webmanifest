@@ -1,0 +1,40 @@
+{
+  "name": "Allo Santé Tchad — ألو صحة تشاد",
+  "short_name": "Allo Santé",
+  "description": "Trouver et contacter un soignant, une pharmacie ou un centre de santé proche, partout au Tchad. Gratuit, sans inscription.",
+  "lang": "fr",
+  "dir": "auto",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F1EA",
+  "theme_color": "#0B4C8C",
+  "categories": ["health", "medical", "utilities"],
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "J'ai besoin d'aide",
+      "short_name": "Aide",
+      "url": "./#/aide",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Trouver un médicament",
+      "short_name": "Médicament",
+      "url": "./#/medicament",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Soignants près de moi",
+      "short_name": "Soignants",
+      "url": "./#/annuaire",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

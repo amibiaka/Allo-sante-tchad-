@@ -1,0 +1,37 @@
+{
+  "avertissement": "Jeu de donnees FICTIF, destine a la demonstration. Aucun de ces professionnels n'existe et aucun numero n'est reel : les fiches marquees demo n'ouvrent jamais un appel. A supprimer avant la mise en production (bouton dedie dans le back-office).",
+  "professionnels": [
+    { "type": "medecin", "nom": "Dr Hassane Abakar", "specialite": "Médecine générale", "ville": "NDJ-NDJ", "quartier": "Moursal", "horaires": "Lun–Sam 8h–19h", "enligne": true },
+    { "type": "medecin", "nom": "Dr Fatimé Ngaba", "specialite": "Pédiatrie", "ville": "NDJ-NDJ", "quartier": "Chagoua", "horaires": "Lun–Ven 9h–17h", "enligne": true },
+    { "type": "medecin", "nom": "Dr Mahamat Saleh Djibrine", "specialite": "Chirurgie / traumatologie", "ville": "NDJ-NDJ", "quartier": "Klémat", "horaires": "Astreinte 24h/24", "enligne": true },
+    { "type": "medecin", "nom": "Dr Achta Oumar", "specialite": "Gynécologie-obstétrique", "ville": "NDJ-NDJ", "quartier": "Farcha", "horaires": "Lun–Sam 8h–16h", "enligne": false },
+    { "type": "medecin", "nom": "Dr Djimet Ngarhoulem", "specialite": "Médecine interne", "ville": "NDJ-NDJ", "quartier": "Diguel", "horaires": "Lun–Ven 8h–15h", "enligne": false },
+    { "type": "infirmier", "nom": "Brahim Adoum", "specialite": "Soins à domicile, pansements, perfusions", "ville": "NDJ-NDJ", "quartier": "Dembé", "horaires": "Tous les jours 7h–21h", "enligne": true },
+    { "type": "infirmier", "nom": "Mariam Hissein", "specialite": "Soins infirmiers, injections", "ville": "NDJ-NDJ", "quartier": "Walia", "horaires": "Lun–Sam 8h–20h", "enligne": true },
+    { "type": "infirmier", "nom": "Abdelkerim Tidjani", "specialite": "Urgences, premiers secours", "ville": "NDJ-NDJ", "quartier": "Gassi", "horaires": "24h/24", "enligne": false },
+    { "type": "sage_femme", "nom": "Zara Mahamat", "specialite": "Accouchement, suivi de grossesse", "ville": "NDJ-NDJ", "quartier": "Ndjari", "horaires": "24h/24", "enligne": true },
+    { "type": "sage_femme", "nom": "Halimé Youssouf", "specialite": "Suivi de grossesse, consultations prénatales", "ville": "NDJ-NDJ", "quartier": "Toukra", "horaires": "Lun–Sam 8h–18h", "enligne": false },
+    { "type": "pharmacie", "nom": "Pharmacie du Rond-Point", "specialite": "Pharmacie de garde le week-end", "ville": "NDJ-NDJ", "quartier": "Sabangali", "horaires": "8h–22h, garde le dimanche", "enligne": true },
+    { "type": "pharmacie", "nom": "Pharmacie Al Amal", "specialite": "Pharmacie", "ville": "NDJ-NDJ", "quartier": "Moursal", "horaires": "8h–20h", "enligne": true },
+    { "type": "pharmacie", "nom": "Pharmacie de Chagoua", "specialite": "Pharmacie, livraison moto-taxi", "ville": "NDJ-NDJ", "quartier": "Chagoua", "horaires": "7h30–21h", "enligne": true },
+    { "type": "pharmacie", "nom": "Pharmacie Walia Santé", "specialite": "Pharmacie", "ville": "NDJ-NDJ", "quartier": "Walia", "horaires": "8h–19h", "enligne": false },
+    { "type": "centre_sante", "nom": "Centre de santé de Farcha", "specialite": "Consultations, vaccinations, maternité", "ville": "NDJ-NDJ", "quartier": "Farcha", "horaires": "24h/24", "enligne": true },
+    { "type": "centre_sante", "nom": "Clinique du Fleuve", "specialite": "Urgences, imagerie, laboratoire", "ville": "NDJ-NDJ", "quartier": "Klémat", "horaires": "24h/24", "enligne": true },
+    { "type": "centre_sante", "nom": "Centre de santé de Diguel", "specialite": "Consultations, soins courants", "ville": "NDJ-NDJ", "quartier": "Diguel", "horaires": "7h–19h", "enligne": false },
+
+    { "type": "medecin", "nom": "Dr Nadjita Beindé", "specialite": "Médecine générale", "ville": "LOC-MDU", "quartier": "Doyon", "horaires": "Lun–Sam 8h–18h", "enligne": true },
+    { "type": "infirmier", "nom": "Rimtebaye Ngonde", "specialite": "Soins à domicile", "ville": "LOC-MDU", "quartier": "Baguirmi", "horaires": "7h–20h", "enligne": true },
+    { "type": "pharmacie", "nom": "Pharmacie de Moundou Centre", "specialite": "Pharmacie", "ville": "LOC-MDU", "quartier": "Guelkoura", "horaires": "8h–20h", "enligne": true },
+    { "type": "centre_sante", "nom": "Centre de santé de Mbombaya", "specialite": "Consultations, maternité", "ville": "LOC-MDU", "quartier": "Mbombaya", "horaires": "24h/24", "enligne": false },
+
+    { "type": "medecin", "nom": "Dr Koumadji Ndoubalengar", "specialite": "Médecine générale", "ville": "MOC-SAR", "quartier": "Résidentiel", "horaires": "Lun–Ven 8h–17h", "enligne": true },
+    { "type": "sage_femme", "nom": "Madeleine Nadjilem", "specialite": "Accouchement", "ville": "MOC-SAR", "quartier": "Kassaye", "horaires": "24h/24", "enligne": true },
+    { "type": "pharmacie", "nom": "Pharmacie du Chari", "specialite": "Pharmacie", "ville": "MOC-SAR", "quartier": "Bégou", "horaires": "8h–19h30", "enligne": false },
+    { "type": "centre_sante", "nom": "Centre de santé de Bégou", "specialite": "Soins courants, vaccinations", "ville": "MOC-SAR", "quartier": "Bégou", "horaires": "7h–18h", "enligne": true },
+
+    { "type": "medecin", "nom": "Dr Idriss Al-Hadj", "specialite": "Médecine générale", "ville": "OUA-ABE", "quartier": "Moumié", "horaires": "Lun–Sam 8h–18h", "enligne": true },
+    { "type": "infirmier", "nom": "Amina Souleymane", "specialite": "Soins infirmiers", "ville": "OUA-ABE", "quartier": "Taradona", "horaires": "8h–20h", "enligne": false },
+    { "type": "pharmacie", "nom": "Pharmacie d'Abéché", "specialite": "Pharmacie, garde de nuit", "ville": "OUA-ABE", "quartier": "Moumié", "horaires": "8h–22h", "enligne": true },
+    { "type": "centre_sante", "nom": "Centre de santé d'Amsiego", "specialite": "Consultations, maternité", "ville": "OUA-ABE", "quartier": "Amsiego", "horaires": "24h/24", "enligne": true }
+  ]
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Allo Sante Tchad">
+  <rect width="512" height="512" rx="113" fill="#0B4C8C"/>
+  <g fill="#fff">
+    <rect x="215" y="123" width="82" height="266" rx="20"/>
+    <rect x="123" y="215" width="266" height="82" rx="20"/>
+  </g>
+  <circle cx="389" cy="389" r="43" fill="#FFD84D"/>
+</svg>
