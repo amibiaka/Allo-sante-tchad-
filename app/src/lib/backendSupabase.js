@@ -278,10 +278,12 @@ export async function creerDemande(p) {
   // que de laisser croire a un envoi reussi.
   const v = await exigerVille(p.villeCode)
   const qid = v && p.quartierNom ? quartierId(v.id, p.quartierNom) : null
-  const l = await requete('/demandes' + q({ select: 'code,id' }), {
-    methode: 'POST',
-    entetes: { Prefer: 'return=representation' },
-    corps: {
+  /* Passage par une fonction plutot qu'un INSERT direct : PostgREST
+     reclamerait la ligne creee, et Postgres appliquerait alors les
+     politiques SELECT — que le patient anonyme n'a pas. La demande
+     partait puis le retour echouait. Voir 01_installation.sql. */
+  const l = await rpc('creer_demande', {
+    p: {
       pour_qui: p.pourQui, niveau: p.niveau, categories: p.categories || [],
       description: p.description || null, vocal_url: p.vocalChemin || null,
       age_approx: p.age || null, sexe: p.sexe || null,
@@ -293,7 +295,7 @@ export async function creerDemande(p) {
       contact_visible: !!p.contactVisible, consentement: true,
     },
   })
-  return l?.[0]
+  return Array.isArray(l) ? l[0] : l
 }
 
 export const suivreDemande = (code) => rpc('suivre_demande', { p_code: code })
@@ -303,10 +305,8 @@ export const annulerDemande = async (code) => !!(await rpc('annuler_demande', { 
 export async function creerOrdonnance(p) {
   const v = await exigerVille(p.villeCode)
   const qid = v && p.quartierNom ? quartierId(v.id, p.quartierNom) : null
-  const l = await requete('/ordonnances' + q({ select: 'code,id' }), {
-    methode: 'POST',
-    entetes: { Prefer: 'return=representation' },
-    corps: {
+  const l = await rpc('creer_ordonnance', {
+    p: {
       image_url: p.imageChemin || null, vocal_url: p.vocalChemin || null,
       note: p.note || null, province_id: v?.province_id ?? null, ville_id: v?.id ?? null,
       quartier_id: qid, quartier_libre: qid ? null : (p.quartierNom || null),
@@ -316,7 +316,7 @@ export async function creerOrdonnance(p) {
       consentement: true,
     },
   })
-  return l?.[0]
+  return Array.isArray(l) ? l[0] : l
 }
 
 export const suivreOrdonnance = (code) => rpc('suivre_ordonnance', { p_code: code })
