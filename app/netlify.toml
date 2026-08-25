@@ -39,13 +39,35 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# --- En-tetes de securite --------------------------------------------
+# Deuxieme ligne de defense seulement : la premiere reste PostgreSQL
+# (RLS + droits colonne par colonne). Ceux-ci protegent le navigateur
+# du patient, pas la base.
 [[headers]]
   for = "/*"
   [headers.values]
+    # Le navigateur refuse le HTTP pendant un an apres la premiere
+    # visite : sur un reseau mobile partage, la premiere requete en
+    # clair est la seule fenetre d'interception.
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
     X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "SAMEORIGIN"
+    # DENY et non SAMEORIGIN : aucun site, pas meme le notre, n'a de
+    # raison d'encadrer l'application. La page de connexion du
+    # back-office serait sinon detournable par superposition.
+    X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(self), microphone=(self), camera=(self)"
+    Cross-Origin-Opener-Policy = "same-origin"
+    # Micro (message vocal), appareil photo (ordonnance) et position
+    # (detection de zone) restent ouverts au site lui-meme. Le reste
+    # est coupe, y compris pour les iframes.
+    Permissions-Policy = "geolocation=(self), microphone=(self), camera=(self), payment=(), usb=(), serial=(), bluetooth=(), magnetometer=(), gyroscope=(), accelerometer=(), midi=(), display-capture=()"
+    # Rien ne se charge d'ailleurs que du site et de Supabase. Les
+    # medias (vocal, photo d'ordonnance) sont recuperes par fetch puis
+    # affiches en blob:, jamais par une URL externe dans src ; d'ou
+    # blob: dans img-src et media-src, et Supabase seulement dans
+    # connect-src. 'unsafe-inline' en style est du au bloc <style> de
+    # demarrage dans index.html (ecran de chargement en 2G).
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://ffpxbefenbnhkicstyph.supabase.co; worker-src 'self'; manifest-src 'self'"
 
 # --- Taches planifiees (gratuites sur Netlify) -----------------------
 # Escalade des urgences vitales sans reponse : toutes les 5 minutes.
