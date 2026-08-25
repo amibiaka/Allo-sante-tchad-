@@ -8,7 +8,7 @@ import { NIVEAUX, CATEGORIES, CONFIG } from '../lib/config'
 import { db } from '../lib/db'
 import { prefs, historique } from '../lib/store'
 import { naviguer, Lien } from '../lib/router'
-import { lienSuivi, messageDemande, lienWhatsApp } from '../lib/links'
+import { lienSuivi, messageDemande, lienWhatsApp, lienWhatsAppPartage } from '../lib/links'
 import { Bouton, Entete, Champ, ChoixCartes, Case, Alerte } from '../components/base'
 import { SelecteurZone } from '../components/zone'
 import { SaisieVocale } from '../components/medias'
@@ -307,7 +307,7 @@ function Succes({ resultat, formulaire }) {
             fait perdre le geste utilisateur, et le navigateur bloque
             l'ouverture — le patient se retrouvait a devoir copier le
             message a la main. */}
-        <a href={lienWhatsApp(CONFIG.whatsappPlateforme || '', message)}
+        <a href={lienWhatsApp(CONFIG.whatsappPlateforme, message) || lienWhatsAppPartage(message)}
            target="_blank" rel="noopener noreferrer" className="block">
           <Bouton variante="succes" taille="grand" className="w-full">
             💬 {t('aide.envoyerWhatsapp')}
