@@ -20,6 +20,15 @@ export function lienWhatsApp(tel, texte = '') {
   return `https://wa.me/${n}${texte ? '?text=' + encodeURIComponent(texte) : ''}`
 }
 
+/* Partage libre : WhatsApp s'ouvre sur la liste des contacts et la
+   personne choisit elle-meme le destinataire. Contrairement a
+   lienWhatsApp, aucun numero n'est requis — c'est le cas du patient qui
+   transmet sa demande a un proche. lienWhatsApp renvoie null sans
+   numero, ce qui donnait un bouton vert sans lien. */
+export function lienWhatsAppPartage(texte = '') {
+  return `https://wa.me/${texte ? '?text=' + encodeURIComponent(texte) : ''}`
+}
+
 export function lienTelegram(pseudo) {
   const p = String(pseudo || '').replace(/^@/, '').trim()
   return p ? `https://t.me/${p}` : null
