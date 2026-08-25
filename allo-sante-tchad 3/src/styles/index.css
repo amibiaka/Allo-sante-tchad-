@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-sable-100 text-nil-900 antialiased;
+    /* Taille de base genereuse : ces ecrans sont lus vite, souvent au soleil. */
+    font-size: 16px;
+    line-height: 1.5;
+    overscroll-behavior-y: none;
+  }
+  html[dir="rtl"] body { @apply font-ar; }
+  /* Cible tactile confortable partout : on vise un doigt, pas une souris. */
+  button, a, select, input, textarea { touch-action: manipulation; }
+  :focus-visible { @apply outline-none ring-4 ring-nil-200 ring-offset-1; }
+  h1 { @apply text-xl font-bold; }
+  h2 { @apply text-lg font-bold; }
+  /* Les champs en dessous de 16px declenchent un zoom sur iOS. */
+  input, select, textarea { font-size: 16px; }
+}
+
+@layer components {
+  .carte { @apply bg-white rounded-2xl shadow-carte; }
+  .champ {
+    @apply w-full rounded-xl border-2 border-sable-300 bg-white px-4 py-3
+           text-nil-900 placeholder:text-nil-900/40 focus:border-nil-400;
+  }
+  .etiquette { @apply block text-sm font-semibold text-nil-700 mb-1.5; }
+  .aide { @apply text-[13px] leading-snug text-nil-900/60; }
+  .puce { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold; }
+  .lien { @apply text-nil-600 underline underline-offset-2 font-medium; }
+  .separateur { @apply border-t border-sable-200; }
+  /* Bandeau colle en bas : la main tient le telephone par le bas. */
+  .barre-bas {
+    @apply sticky bottom-0 -mx-4 mt-6 border-t border-sable-200 bg-sable-100/95
+           px-4 py-3 backdrop-blur;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+@layer utilities {
+  /* Le miroir RTL des fleches et chevrons (CSS explicite : plus sur
+     qu'un variant applique, et lisible par n'importe quel outil). */
+  [dir="rtl"] .miroir-rtl { transform: scaleX(-1); }
+  .nombres-latins { font-variant-numeric: tabular-nums; }
+}
+
+/* Le mode economie coupe tout ce qui est lourd ou decoratif. */
+html[data-lite="1"] .si-donnees { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media print {
+  .sans-impression { display: none !important; }
+}

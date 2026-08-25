@@ -1,0 +1,89 @@
+{
+  "version": "2026-08",
+  "note": "Decoupage conforme a l'ordonnance n°001/PR/2024 : 23 provinces. Le champ q indique la fiabilite de la source du quartier : officiel (commune/decret) > presse > wiki > osm. Les quartiers marques wiki/osm doivent etre valides par un correspondant local depuis le back-office.",
+  "provinces": [
+    { "code": "NDJ", "fr": "N'Djamena", "ar": "إنجامينا", "cities": [
+      { "code": "NDJ-NDJ", "fr": "N'Djamena", "ar": "إنجامينا", "cl": true, "lat": 12.1067, "lng": 15.0444, "districts": [
+        {"fr":"Farcha","g":1,"q":"wiki"},{"fr":"Milezi","g":1,"q":"wiki"},{"fr":"Madjorio","g":1,"q":"wiki"},{"fr":"Guilmeye","g":1,"q":"wiki"},{"fr":"Djougoulier","g":1,"q":"wiki"},{"fr":"Karkandjeri","g":1,"q":"wiki"},{"fr":"Amsinéné","g":1,"q":"wiki"},{"fr":"Massil Abcoma","g":1,"q":"wiki"},{"fr":"Zaraf","g":1,"q":"wiki"},{"fr":"Allaya","g":1,"q":"wiki"},{"fr":"Ardeb-Timan","g":1,"q":"wiki"},{"fr":"Guinébor","g":1,"q":"wiki"},{"fr":"N'Djamena-Koudou","g":1,"q":"wiki"},{"fr":"Antona","g":1,"q":"wiki"},
+        {"fr":"Djamba Ngato","g":2,"q":"wiki"},{"fr":"Mardjandaffack","g":2,"q":"wiki"},{"fr":"Bololo","g":2,"q":"wiki"},{"fr":"Goudji","g":2,"q":"wiki"},{"fr":"Klémat","g":2,"q":"wiki"},
+        {"fr":"Gardolé","g":3,"q":"wiki"},{"fr":"Ambassatna","g":3,"q":"wiki"},{"fr":"Ardep Djoumal","g":3,"q":"wiki"},{"fr":"Sabangali","g":3,"q":"wiki"},{"fr":"Kabalaye","g":3,"q":"wiki"},{"fr":"Djambalbahr","g":3,"q":"wiki"},
+        {"fr":"Repos I","g":4,"q":"wiki"},{"fr":"Repos II","g":4,"q":"wiki"},{"fr":"Naga I","g":4,"q":"wiki"},{"fr":"Naga II","g":4,"q":"wiki"},{"fr":"Blabline","g":4,"q":"wiki"},
+        {"fr":"Ridina","g":5,"q":"wiki"},{"fr":"Am-Riguebé","g":5,"q":"wiki"},{"fr":"Champ de Fils","g":5,"q":"wiki"},{"fr":"Karkandjié","g":5,"q":"wiki"},
+        {"fr":"Moursal","g":6,"q":"wiki"},{"fr":"Paris-Congo","g":6,"q":"wiki"},
+        {"fr":"Chagoua","g":7,"q":"wiki"},{"fr":"Dembé","g":7,"q":"wiki"},{"fr":"Dembé 2","g":7,"q":"wiki"},{"fr":"Ambatta","g":7,"q":"wiki"},{"fr":"Ambatta 2","g":7,"q":"wiki"},{"fr":"Boutalbagara","g":7,"q":"wiki"},{"fr":"Kourmanadji","g":7,"q":"wiki"},{"fr":"Atrone","g":7,"q":"wiki"},{"fr":"Amtoukoui","g":7,"q":"wiki"},{"fr":"Amtoukoui Alaya","g":7,"q":"wiki"},{"fr":"Habena","g":7,"q":"wiki"},{"fr":"Gassi","g":7,"q":"wiki"},{"fr":"Kilwiti","g":7,"q":"wiki"},
+        {"fr":"Diguel","g":8,"q":"wiki"},{"fr":"Ndjari","g":8,"q":"wiki"},{"fr":"Angabo","g":8,"q":"wiki"},{"fr":"Zaffaye-Est","g":8,"q":"wiki"},{"fr":"Zaffaye-Ouest","g":8,"q":"wiki"},{"fr":"Machaga","g":8,"q":"wiki"},{"fr":"Amtoukougne Koudou","g":8,"q":"wiki"},
+        {"fr":"Walia","g":9,"q":"officiel"},{"fr":"Ngoumna","g":9,"q":"officiel"},{"fr":"Digangali","g":9,"q":"officiel"},{"fr":"Ngueli","g":9,"q":"officiel"},{"fr":"Kabé","g":9,"q":"officiel"},{"fr":"Toukra","g":9,"q":"officiel"},{"fr":"Toukra Massa","g":9,"q":"officiel"},{"fr":"Gardolé 2","g":9,"q":"officiel"},
+        {"fr":"Achawaïl","g":10,"q":"officiel"},{"fr":"Almour","g":10,"q":"officiel"},{"fr":"Amhalomma","g":10,"q":"officiel"},{"fr":"Annigueré","g":10,"q":"officiel"},{"fr":"Annouwara","g":10,"q":"officiel"},{"fr":"Dabazene","g":10,"q":"officiel"},{"fr":"Djabalori","g":10,"q":"officiel"},{"fr":"Fondoré 1","g":10,"q":"officiel"},{"fr":"Fondoré 2","g":10,"q":"officiel"},{"fr":"Goudji Charafa","g":10,"q":"officiel"},{"fr":"Gozator","g":10,"q":"officiel"},{"fr":"Hamon Kessa","g":10,"q":"officiel"},{"fr":"Harangadji","g":10,"q":"officiel"},{"fr":"Gaoui","g":10,"q":"officiel"},{"fr":"Hilé Houdjadj","g":10,"q":"officiel"},{"fr":"Lamadji","g":10,"q":"officiel"},{"fr":"Ngabo Chaïb","g":10,"q":"officiel"},{"fr":"Ourallah 1","g":10,"q":"officiel"},{"fr":"Ourallah 2","g":10,"q":"officiel"},{"fr":"Sadjeri","g":10,"q":"officiel"},{"fr":"Sadjeri-Kalatchou","g":10,"q":"officiel"},
+        {"fr":"Koloma","g":0,"q":"local"},{"fr":"Tongolo","g":0,"q":"local"},{"fr":"Mballa Toukra","g":0,"q":"local"},{"fr":"Amriguébé","g":0,"q":"local"}
+      ]}
+    ]},
+    { "code": "BAT", "fr": "Batha", "ar": "البطحاء", "cities": [
+      { "code": "BAT-ATI", "fr": "Ati", "ar": "آتي", "cl": true, "lat": 13.2126, "lng": 18.3397, "districts": [] } ]},
+    { "code": "BEG", "fr": "Bahr el Gazel", "ar": "بحر الغزال", "cities": [
+      { "code": "BEG-MOU", "fr": "Moussoro", "ar": "موسورو", "cl": true, "lat": 13.6406, "lng": 16.4908, "districts": [
+        {"fr":"Centre","q":"osm"},{"fr":"Quartier Arabe","q":"osm"},{"fr":"Gourane","q":"osm"},{"fr":"Sara","q":"osm"},{"fr":"Ouaddaï","q":"osm"} ]} ]},
+    { "code": "BOR", "fr": "Borkou", "ar": "بوركو", "cities": [
+      { "code": "BOR-FAY", "fr": "Faya-Largeau", "ar": "فايا لارجو", "cl": true, "lat": 17.9209, "lng": 19.0953, "districts": [
+        {"fr":"Centre","q":"osm"},{"fr":"Housma","q":"osm"},{"fr":"Djiddi","q":"osm"},{"fr":"Oweney","q":"osm"},{"fr":"Tchagoussou","q":"osm"} ]} ]},
+    { "code": "CHB", "fr": "Chari-Baguirmi", "ar": "شاري باقرمي", "cities": [
+      { "code": "CHB-MAS", "fr": "Massenya", "ar": "ماسينيا", "cl": true, "lat": 11.4033, "lng": 16.1719, "districts": [] } ]},
+    { "code": "ENE", "fr": "Ennedi-Est", "ar": "إنيدي الشرقية", "cities": [
+      { "code": "ENE-AMD", "fr": "Am-Djarass", "ar": "أم جرس", "cl": true, "lat": 16.0663, "lng": 22.8351, "districts": [] } ]},
+    { "code": "ENO", "fr": "Ennedi-Ouest", "ar": "إنيدي الغربية", "cities": [
+      { "code": "ENO-FAD", "fr": "Fada", "ar": "فادا", "cl": true, "lat": 17.1931, "lng": 21.5813, "districts": [] } ]},
+    { "code": "GUE", "fr": "Guéra", "ar": "قيرا", "cities": [
+      { "code": "GUE-MON", "fr": "Mongo", "ar": "منقو", "cl": true, "lat": 12.1843, "lng": 18.6842, "districts": [] } ]},
+    { "code": "HAL", "fr": "Hadjer-Lamis", "ar": "حجر لميس", "cities": [
+      { "code": "HAL-MSG", "fr": "Massaguet", "ar": "ماساقيت", "cl": true, "lat": 12.4824, "lng": 15.4396, "districts": [] } ]},
+    { "code": "KAN", "fr": "Kanem", "ar": "كانم", "cities": [
+      { "code": "KAN-MAO", "fr": "Mao", "ar": "ماو", "cl": true, "lat": 14.1234, "lng": 15.3108, "districts": [] } ]},
+    { "code": "LAC", "fr": "Lac", "ar": "البحيرة", "cities": [
+      { "code": "LAC-BOL", "fr": "Bol", "ar": "بول", "cl": true, "lat": 13.4673, "lng": 14.7135, "districts": [] } ]},
+    { "code": "LOC", "fr": "Logone Occidental", "ar": "لوقون الغربية", "cities": [
+      { "code": "LOC-MDU", "fr": "Moundou", "ar": "موندو", "cl": true, "lat": 8.5744, "lng": 16.0772, "districts": [
+        {"fr":"Dombao","g":1,"q":"wiki"},{"fr":"Doyon","g":1,"q":"wiki"},{"fr":"Taye","g":1,"q":"wiki"},{"fr":"Bebandji","g":1,"q":"wiki"},{"fr":"Koudjiriko","g":1,"q":"wiki"},{"fr":"Ngara","g":1,"q":"wiki"},
+        {"fr":"Nguelbe","g":2,"q":"wiki"},{"fr":"Baguirmi","g":2,"q":"wiki"},{"fr":"Bournou","g":2,"q":"wiki"},{"fr":"Haoussa","g":2,"q":"wiki"},
+        {"fr":"Guelkoura","g":3,"q":"wiki"},{"fr":"Quinze Ans","g":3,"q":"wiki"},{"fr":"Doumbeur I","g":3,"q":"wiki"},{"fr":"Doheri","g":3,"q":"wiki"},{"fr":"Mbague","g":3,"q":"wiki"},
+        {"fr":"Mbombaya","g":4,"q":"wiki"},{"fr":"Gueldjem","g":4,"q":"wiki"},{"fr":"Doumbeur II","g":4,"q":"wiki"},{"fr":"Koutou Guelmbague","g":4,"q":"wiki"},{"fr":"Madana","g":4,"q":"wiki"} ]} ]},
+    { "code": "LOR", "fr": "Logone Oriental", "ar": "لوقون الشرقية", "cities": [
+      { "code": "LOR-DOB", "fr": "Doba", "ar": "دوبا", "cl": true, "lat": 8.6592, "lng": 16.8538, "districts": [
+        {"fr":"Baguirmi","q":"osm"},{"fr":"Bornou","q":"osm"},{"fr":"Haoussa","q":"osm"},{"fr":"Mission Catholique","q":"osm"} ]} ]},
+    { "code": "MAN", "fr": "Mandoul", "ar": "ماندول", "cities": [
+      { "code": "MAN-KOU", "fr": "Koumra", "ar": "كومرا", "cl": true, "lat": 8.9189, "lng": 17.5478, "districts": [
+        {"fr":"Baguirmi","q":"osm"},{"fr":"Bornou","q":"osm"},{"fr":"Goulaye","q":"osm"},{"fr":"Bénodjo","q":"osm"} ]} ]},
+    { "code": "MKE", "fr": "Mayo-Kebbi Est", "ar": "مايو كبي الشرقية", "cities": [
+      { "code": "MKE-BON", "fr": "Bongor", "ar": "بنقور", "cl": true, "lat": 10.2816, "lng": 15.3713, "districts": [] } ]},
+    { "code": "MKO", "fr": "Mayo-Kebbi Ouest", "ar": "مايو كبي الغربية", "cities": [
+      { "code": "MKO-PAL", "fr": "Pala", "ar": "بالا", "cl": true, "lat": 9.3663, "lng": 14.9097, "districts": [] } ]},
+    { "code": "MOC", "fr": "Moyen-Chari", "ar": "شاري الأوسط", "cities": [
+      { "code": "MOC-SAR", "fr": "Sarh", "ar": "سرح", "cl": true, "lat": 9.1455, "lng": 18.3833, "districts": [
+        {"fr":"Résidentiel","q":"presse"},{"fr":"Maye","q":"presse"},{"fr":"Sara Kaba","q":"presse"},{"fr":"Niellim","q":"presse"},{"fr":"Baguirmi","q":"presse"},{"fr":"Bégou","q":"presse"},{"fr":"Blablim","q":"presse"},{"fr":"Blablim Nord","q":"presse"},{"fr":"Bornou","q":"presse"},{"fr":"Haoussa","q":"presse"},{"fr":"Kassaye","q":"presse"},{"fr":"Kassaye Sud","q":"presse"},{"fr":"Paris Congo","q":"presse"},{"fr":"Paris Congo Sud","q":"presse"},{"fr":"Paris Sara","q":"presse"},{"fr":"Quinze Ans","q":"presse"},{"fr":"Maingara","q":"presse"},{"fr":"Mbaimandja","q":"presse"},{"fr":"Yalnas","q":"presse"},{"fr":"Maroc","q":"presse"},{"fr":"Kamati","q":"presse"},{"fr":"Jardin","q":"presse"},{"fr":"Kemkian","q":"presse"},{"fr":"Banda","q":"presse"},{"fr":"Gardolé","q":"presse"},{"fr":"Tatala","q":"presse"},{"fr":"Tombalbaye","q":"presse"} ]} ]},
+    { "code": "OUA", "fr": "Ouaddaï", "ar": "وداي", "cities": [
+      { "code": "OUA-ABE", "fr": "Abéché", "ar": "أبشة", "cl": true, "lat": 13.8292, "lng": 20.8324, "districts": [
+        {"fr":"Moumié","q":"osm"},{"fr":"Taradona","q":"osm"},{"fr":"Amsiego","q":"osm"},{"fr":"Amsoudourié","q":"osm"},{"fr":"Ahmat Al Badwi","q":"osm"} ]} ]},
+    { "code": "SAL", "fr": "Salamat", "ar": "سلامات", "cities": [
+      { "code": "SAL-AMT", "fr": "Am Timan", "ar": "أم تيمان", "cl": true, "lat": 11.0396, "lng": 20.2826, "districts": [
+        {"fr":"Gardolé","q":"osm"},{"fr":"Commerçant","q":"osm"},{"fr":"Riad","q":"osm"},{"fr":"Zongo","q":"osm"},{"fr":"Am-Fondok","q":"osm"} ]} ]},
+    { "code": "SIL", "fr": "Sila", "ar": "سيلا", "cities": [
+      { "code": "SIL-GOZ", "fr": "Goz Beïda", "ar": "قوز بيضا", "cl": true, "lat": 12.2256, "lng": 21.4102, "districts": [] } ]},
+    { "code": "TAN", "fr": "Tandjilé", "ar": "تانجيلي", "cities": [
+      { "code": "TAN-LAI", "fr": "Laï", "ar": "لاي", "cl": true, "lat": 9.3972, "lng": 16.3007, "districts": [] } ]},
+    { "code": "TIB", "fr": "Tibesti", "ar": "تيبستي", "cities": [
+      { "code": "TIB-BAR", "fr": "Bardaï", "ar": "برداي", "cl": true, "lat": 21.3550, "lng": 17.0005, "districts": [] } ]},
+    { "code": "WAF", "fr": "Wadi Fira", "ar": "وادي فيرا", "cities": [
+      { "code": "WAF-BIL", "fr": "Biltine", "ar": "بلتين", "cl": true, "lat": 14.5252, "lng": 20.9287, "districts": [] } ]}
+  ],
+  "groupes": {
+    "0": { "fr": "Arrondissement à préciser", "ar": "الدائرة غير محددة" },
+    "1": { "fr": "1er arrondissement", "ar": "الدائرة 1" },
+    "2": { "fr": "2e arrondissement", "ar": "الدائرة 2" },
+    "3": { "fr": "3e arrondissement", "ar": "الدائرة 3" },
+    "4": { "fr": "4e arrondissement", "ar": "الدائرة 4" },
+    "5": { "fr": "5e arrondissement", "ar": "الدائرة 5" },
+    "6": { "fr": "6e arrondissement", "ar": "الدائرة 6" },
+    "7": { "fr": "7e arrondissement", "ar": "الدائرة 7" },
+    "8": { "fr": "8e arrondissement", "ar": "الدائرة 8" },
+    "9": { "fr": "9e arrondissement", "ar": "الدائرة 9" },
+    "10": { "fr": "10e arrondissement", "ar": "الدائرة 10" }
+  }
+}

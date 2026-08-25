@@ -1,0 +1,57 @@
+# =====================================================================
+#  Allo Sante Tchad - configuration Netlify
+#  Rien a modifier ici : tout se regle dans les variables
+#  d'environnement du tableau de bord Netlify.
+# =====================================================================
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Application monopage : toute URL renvoie vers index.html.
+# (Le routeur interne utilise des ancres #/ donc ceci est une simple
+#  ceinture de securite.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Le service worker et le manifeste ne doivent jamais etre mis en cache
+# de facon agressive, sinon les mises a jour ne passent pas.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Les fichiers avec empreinte peuvent etre caches un an : c'est ce qui
+# rend la 2e visite quasi instantanee en 2G.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), microphone=(self), camera=(self)"
+
+# --- Taches planifiees (gratuites sur Netlify) -----------------------
+# Escalade des urgences vitales sans reponse : toutes les 5 minutes.
+[functions."escalade"]
+  schedule = "*/5 * * * *"
+
+# Purge des photos d'ordonnance et messages vocaux : chaque nuit a 02h00 UTC.
+[functions."purge-medias"]
+  schedule = "0 2 * * *"
