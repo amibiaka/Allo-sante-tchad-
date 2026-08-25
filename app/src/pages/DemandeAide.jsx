@@ -9,7 +9,7 @@ import { db } from '../lib/db'
 import { prefs, historique } from '../lib/store'
 import { naviguer, Lien } from '../lib/router'
 import { lienSuivi, messageDemande, lienWhatsApp } from '../lib/links'
-import { Bouton, Entete, Champ, ChoixCartes, Case, Alerte, Modale } from '../components/base'
+import { Bouton, Entete, Champ, ChoixCartes, Case, Alerte } from '../components/base'
 import { SelecteurZone } from '../components/zone'
 import { SaisieVocale } from '../components/medias'
 
@@ -262,7 +262,7 @@ function Etape3({ f, maj, erreurs }) {
 function Succes({ resultat, formulaire }) {
   const { t } = useLangue()
   const [copie, setCopie] = useState(false)
-  const [partage, setPartage] = useState(false)
+  const [copieMsg, setCopieMsg] = useState(false)
 
   const message = messageDemande({
     code: resultat.code, niveau: formulaire.niveau, categories: formulaire.categories,
@@ -271,7 +271,12 @@ function Succes({ resultat, formulaire }) {
 
   const copier = async () => {
     try { await navigator.clipboard.writeText(lienSuivi(resultat.code)); setCopie(true); setTimeout(() => setCopie(false), 2000) }
-    catch { setPartage(true) }
+    catch { /* le presse-papier peut etre refuse : le lien reste visible a l'ecran */ }
+  }
+
+  const copierMessage = async () => {
+    try { await navigator.clipboard.writeText(message); setCopieMsg(true); setTimeout(() => setCopieMsg(false), 2000) }
+    catch { /* idem */ }
   }
 
   return (
@@ -297,22 +302,24 @@ function Succes({ resultat, formulaire }) {
         <Bouton variante="secondaire" className="w-full" onClick={copier}>
           🔗 {copie ? t('commun.copie') : t('suivi.partagerLien')}
         </Bouton>
-        <Bouton variante="succes" className="w-full" onClick={() => setPartage(true)}>
-          💬 {t('aide.envoyerWhatsapp')}
-        </Bouton>
-      </div>
-
-      <Modale ouverte={partage} onFermer={() => setPartage(false)} titre={t('aide.envoyerWhatsapp')}>
-        <p className="aide mb-2">{t('aide.e3WhatsappAide')}</p>
-        <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-xl bg-sable-100 p-3 text-[13px]">{message}</pre>
-        <a href={lienWhatsApp(CONFIG.whatsappPlateforme || '', message)} target="_blank" rel="noopener noreferrer">
-          <Bouton variante="succes" className="mt-3 w-full">💬 WhatsApp</Bouton>
+        {/* Lien direct, pas un bouton qui ouvre une fenetre : un clic doit
+            basculer sur WhatsApp. Passer par du JavaScript apres l'envoi
+            fait perdre le geste utilisateur, et le navigateur bloque
+            l'ouverture — le patient se retrouvait a devoir copier le
+            message a la main. */}
+        <a href={lienWhatsApp(CONFIG.whatsappPlateforme || '', message)}
+           target="_blank" rel="noopener noreferrer" className="block">
+          <Bouton variante="succes" taille="grand" className="w-full">
+            💬 {t('aide.envoyerWhatsapp')}
+          </Bouton>
         </a>
-        <Bouton variante="secondaire" className="mt-2 w-full"
-                onClick={() => { navigator.clipboard?.writeText(message); setPartage(false) }}>
-          {t('commun.copier')}
-        </Bouton>
-      </Modale>
+        {/* Filet de secours : WhatsApp absent de l'appareil, ou navigateur
+            qui refuse le lien. Le message reste recuperable en un geste. */}
+        <button type="button" onClick={copierMessage}
+                className="lien mx-auto block pt-1 text-[13px]">
+          {copieMsg ? t('commun.copie') : t('commun.copier')}
+        </button>
+      </div>
 
       <div className="mt-6 text-center">
         <Lien vers="/" className="lien">{t('app.nom')}</Lien>
