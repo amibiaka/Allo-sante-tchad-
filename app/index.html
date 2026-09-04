@@ -13,6 +13,27 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Allo Santé" />
     <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- L'application se diffuse par WhatsApp : sans ces balises, le lien
+         partagé n'affiche qu'une URL nue. Avec elles, chaque partage montre
+         une carte avec le nom, la phrase d'accroche et le visuel. -->
+    <link rel="canonical" href="https://afiyatchad.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Allo Santé Tchad" />
+    <meta property="og:url" content="https://afiyatchad.com/" />
+    <meta property="og:title" content="Allo Santé Tchad — urgences et soignants" />
+    <meta property="og:description" content="Trouver et contacter un soignant, une pharmacie ou un centre de santé proche, partout au Tchad. Gratuit, sans inscription, sans téléchargement." />
+    <meta property="og:image" content="https://afiyatchad.com/icons/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Allo Santé Tchad — urgences, soignants et pharmacies partout au Tchad" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="ar_TD" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Allo Santé Tchad — urgences et soignants" />
+    <meta name="twitter:description" content="Trouver et contacter un soignant, une pharmacie ou un centre de santé proche, partout au Tchad. Gratuit, sans inscription." />
+    <meta name="twitter:image" content="https://afiyatchad.com/icons/icon-512.png" />
+
     <!-- Aucune ressource externe : ni police, ni CDN, ni tracker. -->
     <style>
       :root { color-scheme: light }
@@ -58,6 +79,27 @@
         <strong>جافاسكريبت معطّل.</strong> يحتاج هذا التطبيق إلى تفعيل جافاسكريبت.
       </div>
     </noscript>
+
+    <!-- Donnees structurees : dit aux moteurs ce qu'est ce site et pour qui.
+         Rien n'est affirme qui ne soit verifiable : pas d'adresse, pas de
+         numero, pas de note. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Allo Santé Tchad",
+        "alternateName": "ألو صحة تشاد",
+        "url": "https://afiyatchad.com/",
+        "description": "Trouver et contacter un soignant, une pharmacie ou un centre de santé proche, partout au Tchad. Gratuit, sans inscription.",
+        "inLanguage": ["fr", "ar"],
+        "isAccessibleForFree": true,
+        "audience": {
+          "@type": "Audience",
+          "geographicArea": { "@type": "Country", "name": "Tchad" }
+        }
+      }
+    </script>
+
     <!-- Filet de secours : repare une page figee sur "Chargement...". -->
     <script src="/secours.js" defer></script>
     <script type="module" src="/src/main.jsx"></script>
