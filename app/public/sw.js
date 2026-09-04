@@ -11,7 +11,7 @@
    index.html garde en cache designe des fichiers /assets/ qui n'existent
    plus apres un nouveau deploiement : l'application restait alors bloquee
    sur "Chargement..." sans aucun moyen de s'en sortir. */
-const VERSION = 'ast-v2'
+const VERSION = 'ast-v3'
 const COQUE = `${VERSION}-coque`
 const ASSETS = `${VERSION}-assets`
 const PAGES = `${VERSION}-pages`
