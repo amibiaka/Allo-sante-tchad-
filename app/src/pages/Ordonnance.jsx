@@ -6,6 +6,7 @@ import { useLangue } from '../lib/i18n'
 import { db } from '../lib/db'
 import { prefs, historique } from '../lib/store'
 import { Lien } from '../lib/router'
+import { lienWhatsAppPartage, messageOrdonnance } from '../lib/links'
 import { Bouton, Entete, Champ, ChoixCartes, Case, Alerte, Selecteur, Chargement } from '../components/base'
 import { SelecteurZone } from '../components/zone'
 import { PhotoOrdonnance, SaisieVocale } from '../components/medias'
@@ -79,6 +80,15 @@ export default function Ordonnance() {
         <Lien vers={`/ordonnance/${resultat.code}`} className="mt-4 block">
           <Bouton taille="grand" className="w-full">{t('ordo.reponses')}</Bouton>
         </Lien>
+        {/* Meme geste que pour une demande d'aide : prevenir un proche en
+            un clic, sans avoir a recopier le code a la main. */}
+        <a href={lienWhatsAppPartage(messageOrdonnance(
+             { code: resultat.code, note: f.note }, t))}
+           target="_blank" rel="noopener noreferrer" className="mt-2 block">
+          <Bouton variante="succes" className="w-full">
+            💬 {t('aide.envoyerWhatsapp')}
+          </Bouton>
+        </a>
         <div className="mt-6 text-center"><Lien vers="/" className="lien">{t('app.nom')}</Lien></div>
       </div>
     )
