@@ -24,8 +24,23 @@ export function SelecteurLangue({ compact }) {
             ${langue === l.cle ? 'bg-nil-600 text-white' : 'text-nil-700'}`}
         >
           {compact ? l.court : l.nom}
+          {l.essai && <sup className="ms-0.5 text-[9px] font-normal opacity-70">essai</sup>}
         </button>
       ))}
+    </div>
+  )
+}
+
+/* Une traduction non relue ne doit jamais passer pour definitive, surtout
+   dans une application ou l'on decrit une urgence medicale. Le bandeau le
+   dit dans la langue concernee et en francais, et il ne se ferme pas. */
+export function BandeauLangueEssai() {
+  const { essai } = useLangue()
+  if (!essai) return null
+  return (
+    <div role="note"
+         className="w-full bg-soleil-300 px-3 py-1.5 text-center text-[12px] font-bold text-soleil-700">
+      ⚠ Tarjama tajriba, lissa ma itraaja'at · Traduction d’essai, non encore relue
     </div>
   )
 }
