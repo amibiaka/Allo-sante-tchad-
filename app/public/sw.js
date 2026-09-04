@@ -6,10 +6,19 @@
  * les ressources statiques le sont. Les appels a Supabase passent
  * toujours par le reseau.
  * ===================================================================== */
-const VERSION = 'ast-v1'
+/* IMPORTANT : VERSION doit changer a chaque mise en ligne. L'ancienne
+   valeur ne bougeait jamais, donc les anciens caches survivaient. Un
+   index.html garde en cache designe des fichiers /assets/ qui n'existent
+   plus apres un nouveau deploiement : l'application restait alors bloquee
+   sur "Chargement..." sans aucun moyen de s'en sortir. */
+const VERSION = 'ast-v2'
 const COQUE = `${VERSION}-coque`
 const ASSETS = `${VERSION}-assets`
 const PAGES = `${VERSION}-pages`
+
+/* Le reseau tchadien est lent. L'ancienne limite de 4 s renvoyait la
+   page hors ligne a des gens pourtant connectes, des la 1re visite. */
+const DELAI_RESEAU = 15000
 
 const BASE = new URL(self.registration.scope).pathname
 const HORS_LIGNE = BASE + 'hors-ligne.html'
@@ -21,6 +30,17 @@ const PRECACHE = [
   BASE + 'icons/icon-192.png',
   BASE + 'icons/icon.svg',
 ]
+
+/* Fichiers jamais servis depuis le cache : ce sont eux qui reparent
+   l'application quand quelque chose s'est fige. */
+const TOUJOURS_RESEAU = new Set([BASE + 'sw.js', BASE + 'secours.js'])
+
+function avecDelai(promesse, ms) {
+  return Promise.race([
+    promesse,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('lent')), ms)),
+  ])
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -40,6 +60,11 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('message', (e) => {
   if (e.data === 'SKIP_WAITING') self.skipWaiting()
+  /* La page peut demander un nettoyage complet quand elle n'a pas reussi
+     a demarrer (voir secours.js). */
+  if (e.data === 'PURGER') {
+    e.waitUntil(caches.keys().then((n) => Promise.all(n.map((x) => caches.delete(x)))))
+  }
 })
 
 function estAsset(url) {
@@ -54,29 +79,32 @@ self.addEventListener('fetch', (e) => {
   // Jamais de cache pour les donnees (Supabase, API tierces).
   if (url.origin !== self.location.origin) return
   if (url.pathname.includes('/rest/v1/') || url.pathname.includes('/auth/v1/')) return
+  if (TOUJOURS_RESEAU.has(url.pathname)) return
 
-  // 1. Navigation : reseau d'abord (4 s), puis cache, puis page hors ligne.
+  // 1. Navigation : reseau d'abord, cache seulement si le reseau echoue.
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
-      try {
-        const reseau = await Promise.race([
-          fetch(req),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('lent')), 4000)),
-        ])
-        const c = await caches.open(PAGES)
-        c.put(req, reseau.clone())
-        return reseau
-      } catch {
-        return (await caches.match(req)) ||
-               (await caches.match(BASE + 'index.html')) ||
-               (await caches.match(HORS_LIGNE)) ||
-               new Response('Hors ligne', { status: 503, headers: { 'Content-Type': 'text/plain' } })
+      if (navigator.onLine !== false) {
+        try {
+          const reseau = await avecDelai(fetch(req), DELAI_RESEAU)
+          if (reseau && reseau.ok) {
+            const c = await caches.open(PAGES)
+            c.put(req, reseau.clone())
+          }
+          return reseau
+        } catch { /* on retombe sur le cache ci-dessous */ }
       }
+      return (await caches.match(req)) ||
+             (await caches.match(BASE + 'index.html')) ||
+             (await caches.match(HORS_LIGNE)) ||
+             new Response('Hors ligne', { status: 503, headers: { 'Content-Type': 'text/plain' } })
     })())
     return
   }
 
   // 2. Fichiers avec empreinte (/assets/) : cache d'abord, immuable.
+  //    Un 404 ici signifie que la page vient d'un cache perime : on ne le
+  //    garde pas, secours.js se charge de tout remettre a plat.
   if (url.pathname.includes('/assets/')) {
     e.respondWith((async () => {
       const hit = await caches.match(req)
