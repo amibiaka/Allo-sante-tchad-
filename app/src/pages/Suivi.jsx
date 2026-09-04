@@ -8,7 +8,7 @@ import { db } from '../lib/db'
 import { historique } from '../lib/store'
 import { naviguer, Lien } from '../lib/router'
 import { ilYA, dateCourte } from '../lib/format'
-import { lienSuivi, lienAppel, lienWhatsApp } from '../lib/links'
+import { lienSuivi, lienAppel, lienWhatsApp, lienWhatsAppPartage, messageDemande } from '../lib/links'
 import { NIVEAUX } from '../lib/config'
 import { Bouton, Entete, Champ, Alerte, Chargement, Vide, Modale } from '../components/base'
 import { BandeauUrgence } from '../components/chrome'
@@ -47,6 +47,7 @@ function DetailSuivi({ code }) {
   const [d, setD] = useState(undefined)
   const [maj, setMaj] = useState(null)
   const [confirme, setConfirme] = useState(false)
+  const [lienCopie, setLienCopie] = useState(false)
   const monte = useRef(true)
 
   const charger = useCallback(async () => {
@@ -187,9 +188,26 @@ function DetailSuivi({ code }) {
       )}
 
       <div className="mt-6 space-y-2">
+        {/* Un partage doit partir en un geste : lien WhatsApp reel, traite
+            par le navigateur. Le bouton copier donne un retour visible —
+            sans lui on clique sans savoir s'il s'est passe quelque chose. */}
+        <a href={lienWhatsAppPartage(messageDemande({
+             code: d.code, niveau: d.niveau, categories: d.categories,
+             lieu: d.lieu_texte, ville: d.ville, description: d.description,
+           }, t))}
+           target="_blank" rel="noopener noreferrer" className="block">
+          <Bouton variante="succes" className="w-full">
+            💬 {t('aide.envoyerWhatsapp')}
+          </Bouton>
+        </a>
         <Bouton variante="secondaire" className="w-full"
-                onClick={() => navigator.clipboard?.writeText(lienSuivi(d.code))}>
-          🔗 {t('suivi.partagerLien')}
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(lienSuivi(d.code))
+                    setLienCopie(true); setTimeout(() => setLienCopie(false), 2000)
+                  } catch { /* presse-papier refuse : le code reste a l'ecran */ }
+                }}>
+          🔗 {lienCopie ? t('commun.copie') : t('suivi.partagerLien')}
         </Bouton>
         {!cloture && (
           <Bouton variante="danger" className="w-full" onClick={() => setConfirme(true)}>
