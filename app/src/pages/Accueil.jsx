@@ -45,6 +45,16 @@ export default function Accueil() {
     <div>
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
+          {/* Logo officiel, au-dessus du nom plutot qu a cote : sur un
+              telephone de 360 px le nom occupe deja toute la largeur, et le
+              selecteur de langue tient la droite. Le SVG pese 1 Ko. */}
+          <img
+            src="./icons/icon.svg"
+            alt=""
+            width="56"
+            height="56"
+            className="mb-2 h-14 w-14 rounded-2xl"
+          />
           <h1 className="text-2xl font-black leading-tight text-nil-700">{t('app.nom')}</h1>
           <p className="text-[15px] font-semibold text-nil-900/60" lang={t('app.sousTitre') === 'ألو صحة تشاد' ? 'ar' : 'fr'}>
             {t('app.sousTitre')}
