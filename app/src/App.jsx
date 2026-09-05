@@ -3,7 +3,7 @@ import { useRoute, correspond } from './lib/router'
 import { CONFIG } from './lib/config'
 import { appliquerModeLeger } from './lib/net'
 import { Chargement } from './components/base'
-import { BandeauDemo, BandeauLangueEssai, LiseréDrapeau, PropositionInstallation } from './components/chrome'
+import { BandeauDemo, BandeauLangueEssai, PropositionInstallation } from './components/chrome'
 
 const Accueil          = lazy(() => import('./pages/Accueil'))
 const DemandeAide      = lazy(() => import('./pages/DemandeAide'))
@@ -76,7 +76,6 @@ export default function App() {
 function Cadre({ children }) {
   return (
     <div className="mx-auto min-h-screen max-w-lg bg-sable-100">
-      <LiseréDrapeau />
       <BandeauLangueEssai />
       <BandeauDemo />
       <main className="px-4 pb-8 pt-3">{children}</main>
