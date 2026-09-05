@@ -86,7 +86,9 @@ function ConnexionAdmin({ surConnexion, deconnecte }) {
   const entrer = async () => {
     setErreur(null); setEnCours(true)
     try {
-      const s = await db.connecter({ telephone: f.telephone.replace(/\D/g, ''), motDePasse: f.motDePasse })
+      /* Un administrateur se connecte comme un soignant : par numero s'il
+         s'est inscrit avant la confirmation, par adresse sinon. */
+      const s = await db.connecter({ identifiant: f.telephone.trim(), motDePasse: f.motDePasse })
       if (!s || s.profil.role === 'pro') { setErreur(t('admin.acces')); await db.deconnecter() }
       else surConnexion()
     } catch { setErreur(t('pro.erreurIdentifiants')) }
