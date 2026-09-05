@@ -7,11 +7,12 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generer-icones.mjs && vite build",
     "preview": "vite preview --host",
     "geo:sql": "node scripts/generate-geo-sql.mjs",
     "build:demo": "vite build --mode demo && node scripts/build-singlefile.mjs",
-    "check:size": "node scripts/check-size.mjs"
+    "check:size": "node scripts/check-size.mjs",
+    "icones": "node scripts/generer-icones.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
