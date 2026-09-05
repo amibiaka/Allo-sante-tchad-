@@ -448,8 +448,11 @@ export async function inscrire(p) {
 }
 
 export async function connecter({ telephone, motDePasse }) {
-  // En acces libre, la cle du telephone remplace le mot de passe saisi.
-  const cle = motDePasse || (CONFIG.inscriptionLibre ? cleLocale(telephone) : null)
+  /* Les comptes ouverts pendant la phase sans mot de passe n'ont qu'une
+     cle aleatoire, gardee dans leur navigateur. Fermer l'inscription
+     libre ne doit pas les mettre dehors : on retombe sur cette cle meme
+     une fois le mot de passe redevenu obligatoire a l'inscription. */
+  const cle = motDePasse || cleLocale(telephone)
   if (!cle) throw new Error(CONFIG.inscriptionLibre ? 'CLE_ABSENTE' : 'IDENTIFIANTS')
   let d
   try {
@@ -457,7 +460,7 @@ export async function connecter({ telephone, motDePasse }) {
       email: emailDepuisTel(telephone), password: cle,
     })
   } catch { throw new Error('IDENTIFIANTS') }
-  if (CONFIG.inscriptionLibre && motDePasse) poserCleLocale(telephone, motDePasse)
+  if (motDePasse) poserCleLocale(telephone, motDePasse)
   ecrireJeton({
     access_token: d.access_token, refresh_token: d.refresh_token,
     expires_at: Date.now() + (d.expires_in || 3600) * 1000,
