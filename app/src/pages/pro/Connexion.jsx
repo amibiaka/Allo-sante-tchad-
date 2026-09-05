@@ -88,18 +88,8 @@ export default function Connexion({ surConnexion }) {
     <div>
       <Entete titre={t('pro.titre')} />
 
-      <div className="mb-4 flex gap-2">
-        {[['connexion', t('pro.connexion')], ['inscription', t('pro.inscription')]].map(([v, l]) => (
-          <button key={v} onClick={() => { setMode(v); setErreur(null) }} aria-pressed={mode === v}
-                  className={`flex-1 rounded-xl border-2 py-2.5 font-bold
-                    ${mode === v ? 'border-nil-600 bg-nil-600 text-white' : 'border-sable-300 bg-white'}`}>
-            {l}
-          </button>
-        ))}
-      </div>
-
       {mode === 'inscription' && (
-        <div className="mb-4">
+        <div id="inscription" className="mb-4">
           <Alerte ton="succes" titre={`⏳ ${t('badge.provisoire')} — 45 ${t('commun.jours')}`}>
             {t('pro.probationAide')}
           </Alerte>
@@ -171,6 +161,25 @@ export default function Connexion({ surConnexion }) {
       )}
 
       {erreur && <div className="mb-4"><Alerte ton="danger">{erreur}</Alerte></div>}
+
+      {/* L'inscription vit sous la connexion : un soignant qui arrive ici
+          pour la premiere fois doit la voir sans chercher un onglet. */}
+      {mode === 'connexion' ? (
+        <div id="inscription" className="mt-6 border-t-2 border-sable-300 pt-5">
+          <p className="mb-1 text-[16px] font-bold">{t('pro.pasCompte')}</p>
+          <p className="aide mb-3">{t('pro.probationAide')}</p>
+          <Bouton variante="secondaire" className="w-full"
+                  onClick={() => { setMode('inscription'); setErreur(null)
+                    setTimeout(() => document.getElementById('inscription')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}>
+            {t('pro.inscription')}
+          </Bouton>
+        </div>
+      ) : (
+        <button type="button" className="lien mx-auto mt-4 block"
+                onClick={() => { setMode('connexion'); setErreur(null) }}>
+          {t('pro.dejaCompte')}
+        </button>
+      )}
 
       {MODE_DEMO && mode === 'connexion' && (
         <div className="carte mb-4 p-3">
