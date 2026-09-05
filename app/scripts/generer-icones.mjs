@@ -116,6 +116,27 @@ function dessiner(n, maskable) {
   return t
 }
 
+/* Rendu plein cadre : meme dessin, sans coins arrondis ni resserrement. */
+function dessinerPlein(n) {
+  const t = toile(n)
+  const u = n / 512
+  fondDrapeau(t, 0)
+  const cx = n / 2, cy = n / 2
+  const S = (v) => v * u
+  const X = (v) => cx + (v - 256) * u
+  const Y = (v) => cy + (v - 256) * u
+  disque(t, cx, cy, S(156), BLANC)
+  const large = S(29)
+  trait(t, bezier([X(190), Y(154)], [X(180), Y(266)], [X(256), Y(296)]), large, ENCRE)
+  trait(t, bezier([X(322), Y(154)], [X(332), Y(266)], [X(256), Y(296)]), large, ENCRE)
+  trait(t, [[X(256), Y(292)], [X(256), Y(322)]], large, ENCRE)
+  disque(t, X(190), Y(152), S(20), ENCRE)
+  disque(t, X(322), Y(152), S(20), ENCRE)
+  disque(t, X(256), Y(356), S(46), ENCRE)
+  disque(t, X(256), Y(356), S(24), BLANC)
+  return t
+}
+
 /* --- Reduction et encodage ------------------------------------------ */
 /* Moyenne de la zone source correspondante. Les bornes sont calculees
    en entiers : 2048 / 192 ne tombe pas juste, et un indice fractionnaire
@@ -178,8 +199,15 @@ const dossier = join(dirname(fileURLToPath(import.meta.url)), '../public/icons')
 mkdirSync(dossier, { recursive: true })
 
 const grand = dessiner(2048, false)
-for (const taille of [512, 192, 180, 32, 16]) {
+for (const taille of [512, 192, 32, 16]) {
   writeFileSync(join(dossier, `icon-${taille}.png`), png(reduire(grand, taille), taille))
 }
+
+/* Android recadre lui-meme : on lui donne un carre plein, motif resserre. */
 writeFileSync(join(dossier, 'icon-maskable-512.png'), png(reduire(dessiner(2048, true), 512), 512))
+
+/* iOS arrondit lui aussi, et remplit de NOIR ce qui est transparent :
+   l'icone du bureau d'un iPhone doit etre un carre plein. On reutilise
+   donc le rendu sans coins arrondis, sans resserrer le motif. */
+writeFileSync(join(dossier, 'icon-180.png'), png(reduire(dessinerPlein(2048), 180), 180))
 console.log('icones ecrites dans public/icons')
