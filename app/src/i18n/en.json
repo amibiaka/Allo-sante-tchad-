@@ -361,7 +361,18 @@
     "codeRecuperation": "Your recovery code",
     "codeRecuperationAide": "Write it down. It is only needed if you change phone or clear your browser data.",
     "cleAbsente": "This phone does not recognise this number. Enter your recovery code, or sign up.",
-    "motDePasseFacultatif": "Password (optional)"
+    "motDePasseFacultatif": "Password (optional)",
+    "identifiant": "Phone number or email address",
+    "identifiantAide": "Your number if you signed up earlier, otherwise your email address.",
+    "email": "Email address",
+    "emailAide": "Used to confirm your account and to recover your password. Give an address you actually check.",
+    "erreurEmail": "That email address does not look valid.",
+    "emailNonConfirme": "Your account is not confirmed yet. Open the link we sent you by email.",
+    "confirmezTitre": "Confirm your address",
+    "confirmezTexte": "We sent a link to {email}. Open it to activate your account.",
+    "confirmezAide": "The message can take a few minutes to arrive. Remember to check your spam folder.",
+    "renvoyer": "Send the link again",
+    "renvoye": "Link sent again"
   },
   "admin": {
     "titre": "Administration",
