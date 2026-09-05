@@ -117,18 +117,28 @@ function dessiner(n, maskable) {
 }
 
 /* --- Reduction et encodage ------------------------------------------ */
+/* Moyenne de la zone source correspondante. Les bornes sont calculees
+   en entiers : 2048 / 192 ne tombe pas juste, et un indice fractionnaire
+   dans un tableau type ne renvoie rien du tout — l'icone sortait
+   transparente deux pixels sur trois. */
 function reduire(t, cible) {
   const f = t.n / cible
   const out = Buffer.alloc(cible * cible * 4)
-  for (let y = 0; y < cible; y++) for (let x = 0; x < cible; x++) {
-    let r = 0, g = 0, b = 0, a = 0, k = 0
-    for (let j = 0; j < f; j++) for (let i = 0; i < f; i++) {
-      const s = ((y * f + j) * t.n + (x * f + i)) * 4
-      r += t.px[s]; g += t.px[s + 1]; b += t.px[s + 2]; a += t.px[s + 3]; k++
+  for (let y = 0; y < cible; y++) {
+    const sy0 = Math.floor(y * f)
+    const sy1 = Math.max(sy0 + 1, Math.min(t.n, Math.floor((y + 1) * f)))
+    for (let x = 0; x < cible; x++) {
+      const sx0 = Math.floor(x * f)
+      const sx1 = Math.max(sx0 + 1, Math.min(t.n, Math.floor((x + 1) * f)))
+      let r = 0, g = 0, b = 0, a = 0, k = 0
+      for (let sy = sy0; sy < sy1; sy++) for (let sx = sx0; sx < sx1; sx++) {
+        const s = (sy * t.n + sx) * 4
+        r += t.px[s]; g += t.px[s + 1]; b += t.px[s + 2]; a += t.px[s + 3]; k++
+      }
+      const d = (y * cible + x) * 4
+      out[d] = Math.round(r / k); out[d + 1] = Math.round(g / k)
+      out[d + 2] = Math.round(b / k); out[d + 3] = Math.round(a / k)
     }
-    const d = (y * cible + x) * 4
-    out[d] = Math.round(r / k); out[d + 1] = Math.round(g / k)
-    out[d + 2] = Math.round(b / k); out[d + 3] = Math.round(a / k)
   }
   return out
 }
