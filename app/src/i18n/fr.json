@@ -505,7 +505,11 @@
     "installer": "Installer l'application",
     "installerAide": "Ajoutez Allo Santé à votre écran d'accueil : elle s'ouvrira plus vite et fonctionnera même sans connexion.",
     "maj": "Une nouvelle version est disponible",
-    "majBouton": "Mettre à jour"
+    "majBouton": "Mettre à jour",
+    "proposerTitre": "Installez Allo Santé sur votre téléphone",
+    "proposerTexte": "Un appui sur l'icône et vous y êtes. Plus besoin de retrouver le lien, et l'application s'ouvre même sans connexion.",
+    "plusTard": "Plus tard",
+    "iosAide": "Appuyez sur le bouton Partager en bas de l'écran, puis sur « Sur l'écran d'accueil »."
   },
   "lien": {
     "entete": "ALLO SANTÉ TCHAD — demande d'aide",
