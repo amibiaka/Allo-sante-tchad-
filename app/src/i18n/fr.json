@@ -361,7 +361,18 @@
     "codeRecuperation": "Votre code de récupération",
     "codeRecuperationAide": "Notez-le. Il sert uniquement si vous changez de téléphone ou effacez les données de votre navigateur.",
     "cleAbsente": "Ce téléphone ne reconnaît pas ce numéro. Saisissez votre code de récupération, ou inscrivez-vous.",
-    "motDePasseFacultatif": "Mot de passe (facultatif)"
+    "motDePasseFacultatif": "Mot de passe (facultatif)",
+    "identifiant": "Numéro de téléphone ou adresse e-mail",
+    "identifiantAide": "Votre numéro si vous vous êtes inscrit avant, sinon votre adresse e-mail.",
+    "email": "Adresse e-mail",
+    "emailAide": "Elle sert à confirmer votre compte et à récupérer votre mot de passe. Donnez une adresse que vous consultez.",
+    "erreurEmail": "Cette adresse e-mail ne semble pas valide.",
+    "emailNonConfirme": "Votre compte n'est pas encore confirmé. Ouvrez le lien reçu par e-mail.",
+    "confirmezTitre": "Confirmez votre adresse",
+    "confirmezTexte": "Nous avons envoyé un lien à {email}. Ouvrez-le pour activer votre compte.",
+    "confirmezAide": "Le message peut mettre quelques minutes à arriver. Pensez à regarder dans les courriers indésirables.",
+    "renvoyer": "Renvoyer le lien",
+    "renvoye": "Lien renvoyé"
   },
   "admin": {
     "titre": "Administration",
