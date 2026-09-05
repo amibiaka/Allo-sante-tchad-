@@ -505,7 +505,11 @@
     "installer": "Install the app",
     "installerAide": "Add Allo Santé to your home screen: it will open faster and work even without a connection.",
     "maj": "A new version is available",
-    "majBouton": "Update"
+    "majBouton": "Update",
+    "proposerTitre": "Install Allo Santé on your phone",
+    "proposerTexte": "One tap on the icon and you are in. No need to find the link again, and it opens even without a connection.",
+    "plusTard": "Later",
+    "iosAide": "Tap the Share button at the bottom of the screen, then “Add to Home Screen”."
   },
   "lien": {
     "entete": "ALLO SANTÉ TCHAD — request for help",
