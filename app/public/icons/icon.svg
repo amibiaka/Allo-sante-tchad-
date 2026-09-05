@@ -1,8 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Allo Sante Tchad">
-  <rect width="512" height="512" rx="113" fill="#0B4C8C"/>
-  <g fill="#fff">
-    <rect x="215" y="123" width="82" height="266" rx="20"/>
-    <rect x="123" y="215" width="266" height="82" rx="20"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Allo Santé Tchad">
+  <!-- Les trois bandes du drapeau tchadien, puis un stethoscope.
+       Pas de croix : l'embleme de la Croix-Rouge est protege par les
+       Conventions de Geneve et deja utilise au Tchad. -->
+  <defs><clipPath id="coin"><rect width="512" height="512" rx="113"/></clipPath></defs>
+  <g clip-path="url(#coin)">
+    <rect width="170.67" height="512" fill="#002664"/>
+    <rect x="170.67" width="170.67" height="512" fill="#FECB00"/>
+    <rect x="341.33" width="170.67" height="512" fill="#C60C30"/>
   </g>
-  <circle cx="389" cy="389" r="43" fill="#FFD84D"/>
+  <circle cx="256" cy="256" r="156" fill="#fff"/>
+  <g fill="none" stroke="#04223F" stroke-width="29" stroke-linecap="round">
+    <path d="M190 154 Q180 266 256 296"/>
+    <path d="M322 154 Q332 266 256 296"/>
+    <path d="M256 292 V322"/>
+  </g>
+  <circle cx="190" cy="152" r="20" fill="#04223F"/>
+  <circle cx="322" cy="152" r="20" fill="#04223F"/>
+  <circle cx="256" cy="356" r="35" fill="none" stroke="#04223F" stroke-width="22"/>
 </svg>
