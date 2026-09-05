@@ -12,13 +12,15 @@ export default function Connexion({ surConnexion }) {
   const [erreur, setErreur] = useState(null)
   const [enCours, setEnCours] = useState(false)
   const [f, setF] = useState({
-    telephone: '', motDePasse: '', nom: '', type: 'medecin', specialite: '',
+    telephone: '', email: '', motDePasse: '', nom: '', type: 'medecin', specialite: '',
     horaires: '', adresse: '', whatsapp: '',
     zone: { provinceCode: '', villeCode: '' },
   })
   const maj = (p) => setF((v) => ({ ...v, ...p }))
 
   const [codeRecup, setCodeRecup] = useState(null)
+  const [aConfirmer, setAConfirmer] = useState(null)
+  const [renvoye, setRenvoye] = useState(false)
   const libre = CONFIG.inscriptionLibre
 
   const messageErreur = (e) => ({
@@ -26,6 +28,7 @@ export default function Connexion({ surConnexion }) {
     COMPTE_EXISTANT: t('pro.erreurExistant'),
     CONFIRMATION_EMAIL_ACTIVE: t('pro.erreurConfirmation'),
     CLE_ABSENTE: t('pro.cleAbsente'),
+    EMAIL_NON_CONFIRME: t('pro.emailNonConfirme'),
   }[e] || e || t('commun.erreur'))
 
   /* Raccourci de demonstration : on se connecte directement, sans passer
@@ -40,16 +43,25 @@ export default function Connexion({ surConnexion }) {
   const soumettre = async () => {
     setErreur(null)
     const tel = f.telephone.replace(/\D/g, '')
-    if (tel.length < 6) return setErreur(t('pro.erreurChamps'))
+    const saisi = f.telephone.trim()
+    if (mode === 'connexion' ? saisi.length < 6 : tel.length < 6) return setErreur(t('pro.erreurChamps'))
     if (!libre && f.motDePasse.length < 6) return setErreur(t('pro.erreurChamps'))
-    if (mode === 'inscription' && (!f.nom.trim() || !f.zone.villeCode)) return setErreur(t('pro.erreurChamps'))
+    if (mode === 'inscription') {
+      if (!f.nom.trim() || !f.zone.villeCode) return setErreur(t('pro.erreurChamps'))
+      /* Une adresse invalide ne se voit qu'au moment ou le courriel
+         n'arrive pas : on la verifie tout de suite. */
+      if (f.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) {
+        return setErreur(t('pro.erreurEmail'))
+      }
+    }
     setEnCours(true)
     try {
       if (mode === 'connexion') {
-        await db.connecter({ telephone: tel, motDePasse: f.motDePasse })
+        await db.connecter({ identifiant: saisi, motDePasse: f.motDePasse })
       } else {
         const r = await db.inscrire({
-          telephone: tel, motDePasse: f.motDePasse, nom: f.nom.trim(), type: f.type,
+          telephone: tel, email: f.email.trim(), motDePasse: f.motDePasse,
+          nom: f.nom.trim(), type: f.type,
           specialite: f.specialite, horaires: f.horaires, adresse: f.adresse,
           whatsapp: f.whatsapp ? '+235' + f.whatsapp.replace(/\D/g, '') : null,
           villeCode: f.zone.villeCode,
@@ -57,12 +69,38 @@ export default function Connexion({ surConnexion }) {
         })
         // Le code n'existe qu'en acces libre avec une vraie base : on le
         // montre une fois, puis on entre.
+        if (r?.confirmationRequise) { setAConfirmer(r.email); setEnCours(false); return }
         if (r?.codeRecuperation) { setCodeRecup(r.codeRecuperation); setEnCours(false); return }
       }
       surConnexion?.()
     } catch (e) {
       setErreur(messageErreur(e.message))
     } finally { setEnCours(false) }
+  }
+
+  if (aConfirmer) {
+    return (
+      <div>
+        <Entete titre={t('pro.titre')} />
+        <div className="carte p-4 text-center">
+          <p className="text-[42px]">📬</p>
+          <p className="mt-2 text-[18px] font-bold">{t('pro.confirmezTitre')}</p>
+          <p className="mt-2 text-[15px]">{t('pro.confirmezTexte', { email: aConfirmer })}</p>
+          <p className="aide mt-3">{t('pro.confirmezAide')}</p>
+          <Bouton variante="secondaire" className="mt-4 w-full" disabled={renvoye}
+                  onClick={async () => {
+                    try { await db.renvoyerConfirmation(aConfirmer) } catch { /* on ne bloque pas */ }
+                    setRenvoye(true)
+                  }}>
+            {renvoye ? t('pro.renvoye') : t('pro.renvoyer')}
+          </Bouton>
+          <button type="button" className="lien mx-auto mt-4 block"
+                  onClick={() => { setAConfirmer(null); setMode('connexion') }}>
+            {t('pro.dejaCompte')}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (codeRecup) {
@@ -96,14 +134,32 @@ export default function Connexion({ surConnexion }) {
         </div>
       )}
 
-      <Champ etiquette={t('pro.telephone')} aide={t('pro.telephoneAide')} obligatoire>
-        <div className="flex gap-2" dir="ltr">
-          <span className="grid min-w-[4.5rem] place-items-center rounded-xl border-2 border-sable-300 bg-sable-100 font-bold nombres-latins">+235</span>
-          <input className="champ nombres-latins" inputMode="tel" maxLength={12} placeholder="66 00 00 00"
-                 autoComplete="username"
-                 value={f.telephone} onChange={(e) => maj({ telephone: e.target.value.replace(/[^\d ]/g, '') })} />
-        </div>
-      </Champ>
+      {mode === 'connexion' ? (
+        /* Un seul champ : les comptes ouverts avant la confirmation se
+           connectent par numero, les nouveaux par leur adresse. */
+        <Champ etiquette={t('pro.identifiant')} aide={t('pro.identifiantAide')} obligatoire>
+          <input className="champ" inputMode="email" maxLength={120} placeholder="66 00 00 00"
+                 autoComplete="username" dir="ltr"
+                 value={f.telephone} onChange={(e) => maj({ telephone: e.target.value })} />
+        </Champ>
+      ) : (
+        <Champ etiquette={t('pro.telephone')} aide={t('pro.telephoneAide')} obligatoire>
+          <div className="flex gap-2" dir="ltr">
+            <span className="grid min-w-[4.5rem] place-items-center rounded-xl border-2 border-sable-300 bg-sable-100 font-bold nombres-latins">+235</span>
+            <input className="champ nombres-latins" inputMode="tel" maxLength={12} placeholder="66 00 00 00"
+                   autoComplete="username"
+                   value={f.telephone} onChange={(e) => maj({ telephone: e.target.value.replace(/[^\d ]/g, '') })} />
+          </div>
+        </Champ>
+      )}
+
+      {mode === 'inscription' && (
+        <Champ etiquette={t('pro.email')} aide={t('pro.emailAide')}>
+          <input className="champ" type="email" inputMode="email" maxLength={120} dir="ltr"
+                 autoComplete="email" placeholder="nom@exemple.td"
+                 value={f.email} onChange={(e) => maj({ email: e.target.value })} />
+        </Champ>
+      )}
 
       {libre ? (
         <p className="aide mb-4">🔓 {t('pro.sansMotDePasse')}</p>
