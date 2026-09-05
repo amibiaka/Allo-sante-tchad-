@@ -39,7 +39,7 @@ const NOMS = [
   'creerDemande', 'suivreDemande', 'annulerDemande', 'contactDemande', 'contactOrdonnance',
   'creerOrdonnance', 'suivreOrdonnance',
   'numerosUrgence', 'statsPubliques', 'suggererQuartier', 'signaler',
-  'inscrire', 'connecter', 'deconnecter', 'sessionCourante',
+  'inscrire', 'connecter', 'renvoyerConfirmation', 'deconnecter', 'sessionCourante',
   'majPro', 'definirEnLigne', 'demandesZone', 'repondre',
   'ordonnancesZone', 'repondreOrdonnance',
   'adminStats', 'adminPros', 'adminMajPro', 'adminDemandes', 'adminMajDemande',
