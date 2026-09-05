@@ -60,26 +60,10 @@
       @media (prefers-reduced-motion: reduce) { .barre i { animation:none; width:100% } }
       noscript div { padding:1.25rem; font-size:15px; line-height:1.5 }
     </style>
-    <script>
-      /* Chrome declenche beforeinstallprompt tres tot, parfois avant que
-         React ne soit monte (telephone lent, reseau 2G). On retient ici
-         l invitation, on la rejoue ensuite pour l application : sans cela
-         le bouton Installer ne fait rien du tout. */
-      window.__astBip = null
-      addEventListener("beforeinstallprompt", function (e) {
-        if (e.__rejoue) return
-        e.preventDefault()
-        e.__rejoue = true
-        window.__astBip = e
-        ;[1500, 5000].forEach(function (d) {
-          setTimeout(function () { try { dispatchEvent(e) } catch (err) {} }, d)
-        })
-      })
-      addEventListener("appinstalled", function () {
-        window.__astBip = null
-        try { localStorage.setItem("ast.install", JSON.stringify({ faite: true })) } catch (err) {}
-      })
-    </script>
+    <!-- Retient l invitation d installation que Chrome declenche parfois
+         avant que l application ne soit chargee. Fichier separe : la
+         politique de securite interdit le script en ligne. -->
+    <script src="./pwa-invite.js"></script>
   </head>
   <body>
     <div id="root">
