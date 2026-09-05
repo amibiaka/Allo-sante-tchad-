@@ -77,3 +77,11 @@
 # Purge des photos d'ordonnance et messages vocaux : chaque nuit a 02h00 UTC.
 [functions."purge-medias"]
   schedule = "0 2 * * *"
+
+# Le manifeste doit etre servi comme du JSON. Netlify le renvoyait en
+# application/octet-stream, ce que certains navigateurs refusent au
+# moment de proposer l installation.
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=utf-8"
