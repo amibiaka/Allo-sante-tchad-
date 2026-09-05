@@ -10,6 +10,20 @@ import { modeLeger, definirModeLeger, estEnLigne, surChangementReseau } from '..
 import { Lien, naviguer } from '../lib/router'
 import { Bouton, Modale, Alerte } from './base'
 
+/* Un liseré aux couleurs du drapeau, en haut de chaque écran. Il reste
+   confiné à cette bande : plus bas, le rouge veut dire « urgence
+   vitale » et le jaune « sous 24 heures ». Répandre les couleurs
+   nationales dans l'interface casserait ce code de lecture. */
+export function LiseréDrapeau() {
+  return (
+    <div aria-hidden="true" className="flex h-[5px] w-full" dir="ltr">
+      <span className="flex-1" style={{ background: '#002664' }} />
+      <span className="flex-1" style={{ background: '#FECB00' }} />
+      <span className="flex-1" style={{ background: '#C60C30' }} />
+    </div>
+  )
+}
+
 export function SelecteurLangue({ compact }) {
   const { langue, changer } = useLangue()
   return (
@@ -191,6 +205,102 @@ export function EtatReseau() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Beaucoup d'utilisateurs reviennent en cherchant le lien WhatsApp
+   d'origine. On leur propose donc d'installer, mais pas a la premiere
+   seconde de la premiere visite : une invitation qui arrive avant qu'on
+   ait compris a quoi sert l'application se ferme sans etre lue. Elle
+   apparait a la deuxieme ouverture, ou apres une minute sur place. */
+const CLE_INSTALL = 'ast.install'
+const estInstallee = () => {
+  try {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+  } catch { return false }
+}
+const estIOS = () => {
+  try {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent)
+  } catch { return false }
+}
+
+export function PropositionInstallation() {
+  const { t } = useLangue()
+  const [evt, setEvt] = useState(null)
+  const [visible, setVisible] = useState(false)
+  const ios = estIOS()
+
+  useEffect(() => {
+    if (estInstallee()) return
+    let etat = {}
+    try { etat = JSON.parse(localStorage.getItem(CLE_INSTALL) || '{}') } catch { /* stockage refuse */ }
+    if (etat.refuse || etat.faite) return
+
+    const visites = (etat.visites || 0) + 1
+    try { localStorage.setItem(CLE_INSTALL, JSON.stringify({ ...etat, visites })) } catch { /* ignore */ }
+
+    const h = (e) => { e.preventDefault(); setEvt(e) }
+    window.addEventListener('beforeinstallprompt', h)
+
+    /* iOS ne fournit aucun evenement d'installation : on montre la marche
+       a suivre, sinon ces utilisateurs ne l'apprennent jamais. */
+    const delai = visites >= 2 ? 6000 : 60000
+    const m = setTimeout(() => setVisible(true), delai)
+    return () => { window.removeEventListener('beforeinstallprompt', h); clearTimeout(m) }
+  }, [])
+
+  const fermer = (definitif) => {
+    setVisible(false)
+    if (!definitif) return
+    try {
+      const etat = JSON.parse(localStorage.getItem(CLE_INSTALL) || '{}')
+      localStorage.setItem(CLE_INSTALL, JSON.stringify({ ...etat, refuse: true }))
+    } catch { /* ignore */ }
+  }
+
+  if (!visible || (!evt && !ios)) return null
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center p-3" role="dialog"
+         aria-label={t('pwa.proposerTitre')}>
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl border-2 border-nil-200 bg-white shadow-xl">
+        <LiseréDrapeau />
+        <div className="flex items-start gap-3 p-4">
+          <img src="./icons/icon-192.png" alt="" width="52" height="52"
+               className="h-[52px] w-[52px] shrink-0 rounded-xl" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-bold leading-snug">{t('pwa.proposerTitre')}</p>
+            <p className="aide mt-1">{ios ? t('pwa.iosAide') : t('pwa.proposerTexte')}</p>
+          </div>
+        </div>
+        <div className="flex gap-2 px-4 pb-4">
+          <Bouton variante="secondaire" className="flex-1" taille="petit"
+                  onClick={() => fermer(true)}>{t('pwa.plusTard')}</Bouton>
+          {evt && (
+            <Bouton className="flex-1" taille="petit"
+                    onClick={async () => {
+                      evt.prompt()
+                      const r = await evt.userChoice.catch(() => null)
+                      if (r && r.outcome === 'accepted') {
+                        try {
+                          const etat = JSON.parse(localStorage.getItem(CLE_INSTALL) || '{}')
+                          localStorage.setItem(CLE_INSTALL, JSON.stringify({ ...etat, faite: true }))
+                        } catch { /* ignore */ }
+                      }
+                      setEvt(null); setVisible(false)
+                    }}>
+              {t('pwa.installer')}
+            </Bouton>
+          )}
+          {ios && !evt && (
+            <Bouton className="flex-1" taille="petit" onClick={() => fermer(true)}>
+              {t('commun.confirmer')}
+            </Bouton>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function InstallerPWA() {
   const { t } = useLangue()
   const [evt, setEvt] = useState(null)
