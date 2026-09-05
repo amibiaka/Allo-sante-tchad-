@@ -10,20 +10,6 @@ import { modeLeger, definirModeLeger, estEnLigne, surChangementReseau } from '..
 import { Lien, naviguer } from '../lib/router'
 import { Bouton, Modale, Alerte } from './base'
 
-/* Un liseré aux couleurs du drapeau, en haut de chaque écran. Il reste
-   confiné à cette bande : plus bas, le rouge veut dire « urgence
-   vitale » et le jaune « sous 24 heures ». Répandre les couleurs
-   nationales dans l'interface casserait ce code de lecture. */
-export function LiseréDrapeau() {
-  return (
-    <div aria-hidden="true" className="flex h-[5px] w-full" dir="ltr">
-      <span className="flex-1" style={{ background: '#002664' }} />
-      <span className="flex-1" style={{ background: '#FECB00' }} />
-      <span className="flex-1" style={{ background: '#C60C30' }} />
-    </div>
-  )
-}
-
 export function SelecteurLangue({ compact }) {
   const { langue, changer } = useLangue()
   return (
@@ -262,7 +248,6 @@ export function PropositionInstallation() {
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center p-3" role="dialog"
          aria-label={t('pwa.proposerTitre')}>
       <div className="w-full max-w-lg overflow-hidden rounded-2xl border-2 border-nil-200 bg-white shadow-xl">
-        <LiseréDrapeau />
         <div className="flex items-start gap-3 p-4">
           <img src="./icons/icon-192.png" alt="" width="52" height="52"
                className="h-[52px] w-[52px] shrink-0 rounded-xl" />
