@@ -469,7 +469,10 @@ export async function inscrire(p) {
   return { profil: compte, pro: habiller(pro) }
 }
 
-export async function connecter({ telephone, motDePasse }) {
+export async function renvoyerConfirmation() { return true }
+
+export async function connecter({ telephone, identifiant, motDePasse }) {
+  telephone = String(identifiant ?? telephone ?? '').replace(/@.*$/, '')
   const db = charger()
   const tel = String(telephone).replace(/\D/g, '')
   const c = db.comptes.find((x) => x.telephone === tel && (
