@@ -210,7 +210,7 @@ const estIOS = () => {
 
 export function PropositionInstallation() {
   const { t } = useLangue()
-  const [evt, setEvt] = useState(null)
+  const [evt, setEvt] = useState(typeof window === 'undefined' ? null : window.__astBip || null)
   const [visible, setVisible] = useState(false)
   const ios = estIOS()
 
@@ -288,7 +288,7 @@ export function PropositionInstallation() {
 
 export function InstallerPWA() {
   const { t } = useLangue()
-  const [evt, setEvt] = useState(null)
+  const [evt, setEvt] = useState(typeof window === 'undefined' ? null : window.__astBip || null)
   useEffect(() => {
     const h = (e) => { e.preventDefault(); setEvt(e) }
     window.addEventListener('beforeinstallprompt', h)
