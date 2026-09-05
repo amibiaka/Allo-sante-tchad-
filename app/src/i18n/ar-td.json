@@ -327,7 +327,11 @@
     "installer": "Rakkib al-application",
     "installerAide": "Zid Allo Santé fi shaashat telefonak : tanfatih be sur'a wa tashtaghal hatta bala reseau.",
     "maj": "Fi version jadiida",
-    "majBouton": "Jaddid"
+    "majBouton": "Jaddid",
+    "proposerTitre": "Rakkib « Allo Santé » fi telefonak",
+    "proposerTexte": "Dugga wahda ala al-ikoona wa tadkhul tawwali. Ma tadawwir ar-rabt tani, wa yanfatih hatta bala reseau.",
+    "plusTard": "Ba'deen",
+    "iosAide": "Dugg zurr al-mushaaraka tihit fi ash-shaasha, ba'deen « Add to Home Screen »."
   },
   "lien": {
     "entete": "ALLO SANTÉ TCHAD — talab musaada",
