@@ -390,15 +390,27 @@ async function authentifier(chemin, corps) {
 }
 
 export async function inscrire(p) {
-  const email = emailDepuisTel(p.telephone)
+  /* L'adresse fabriquee (66XXXXXX@tel.allosante.td) ne recoit rien : elle
+     ne peut donc pas servir a confirmer un compte. Des qu'une vraie
+     adresse est saisie, c'est elle l'identite du compte. */
+  const email = (p.email || '').trim().toLowerCase() || emailDepuisTel(p.telephone)
   const libre = CONFIG.inscriptionLibre && !p.motDePasse
   const cle = libre ? nouvelleCle() : p.motDePasse
   if (libre) { p = { ...p, motDePasse: cle } }
   let d
   try {
+    /* Tout le formulaire part dans les metadonnees : si la confirmation
+       par courriel est active, l'inscription ne rend pas de session et le
+       navigateur ne peut rien ecrire. C'est la base qui creera la fiche au
+       moment de la confirmation (voir 09_confirmation_email.sql). */
     d = await authentifier('/signup', {
       email, password: p.motDePasse,
-      data: { nom: p.nom, telephone: p.telephone },
+      data: {
+        nom: p.nom, telephone: p.telephone, type: p.type,
+        specialite: p.specialite || '', horaires: p.horaires || '',
+        adresse: p.adresse || '', whatsapp: p.whatsapp || '',
+        ville_code: p.villeCode || '', quartier_nom: p.quartierNom || '',
+      },
     })
   } catch (e) {
     throw new Error(/already|exists|registered/i.test(e.message) ? 'COMPTE_EXISTANT' : e.message)
@@ -406,11 +418,15 @@ export async function inscrire(p) {
 
   if (d.access_token) {
     ecrireJeton({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (d.expires_in || 3600) * 1000 })
+  } else if (email.includes('@') && !email.endsWith(CONFIG.domaineTel)) {
+    /* Pas de session : la confirmation est activee. Le compte existe, la
+       fiche sera creee quand le lien sera ouvert. On le dit clairement au
+       lieu d'afficher une erreur sur une inscription qui a reussi. */
+    return { confirmationRequise: true, email }
   } else {
-    // La confirmation par e-mail est activee : l'inscription par numero
-    // ne peut pas fonctionner tant qu'elle n'est pas desactivee.
-    try { await connecter({ telephone: p.telephone, motDePasse: p.motDePasse }) }
-    catch { throw new Error('CONFIRMATION_EMAIL_ACTIVE') }
+    // Confirmation activee mais adresse fabriquee : le lien n'arrivera
+    // jamais. On refuse plutot que de laisser un compte inaccessible.
+    throw new Error('CONFIRMATION_EMAIL_ACTIVE')
   }
 
   const uid = d.user?.id || d.id || (await utilisateurCourant())?.id
@@ -447,20 +463,29 @@ export async function inscrire(p) {
   }
 }
 
-export async function connecter({ telephone, motDePasse }) {
+export async function renvoyerConfirmation(email) {
+  await authentifier('/resend', { type: 'signup', email: String(email).trim().toLowerCase() })
+  return true
+}
+
+export async function connecter({ telephone, identifiant, motDePasse }) {
+  /* Un seul champ : les 82 comptes ouverts avant la confirmation se
+     connectent par numero, les nouveaux par leur adresse. */
+  const saisi = String(identifiant ?? telephone ?? '').trim()
+  const adresse = saisi.includes('@') ? saisi.toLowerCase() : emailDepuisTel(saisi)
   /* Les comptes ouverts pendant la phase sans mot de passe n'ont qu'une
      cle aleatoire, gardee dans leur navigateur. Fermer l'inscription
      libre ne doit pas les mettre dehors : on retombe sur cette cle meme
      une fois le mot de passe redevenu obligatoire a l'inscription. */
-  const cle = motDePasse || cleLocale(telephone)
+  const cle = motDePasse || cleLocale(saisi)
   if (!cle) throw new Error(CONFIG.inscriptionLibre ? 'CLE_ABSENTE' : 'IDENTIFIANTS')
   let d
   try {
-    d = await authentifier('/token?grant_type=password', {
-      email: emailDepuisTel(telephone), password: cle,
-    })
-  } catch { throw new Error('IDENTIFIANTS') }
-  if (motDePasse) poserCleLocale(telephone, motDePasse)
+    d = await authentifier('/token?grant_type=password', { email: adresse, password: cle })
+  } catch (e) {
+    throw new Error(/not confirmed|confirm/i.test(e.message) ? 'EMAIL_NON_CONFIRME' : 'IDENTIFIANTS')
+  }
+  if (motDePasse) poserCleLocale(saisi, motDePasse)
   ecrireJeton({
     access_token: d.access_token, refresh_token: d.refresh_token,
     expires_at: Date.now() + (d.expires_in || 3600) * 1000,
