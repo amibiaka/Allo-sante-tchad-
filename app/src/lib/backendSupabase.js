@@ -112,6 +112,32 @@ function q(params) {
 const echappe = (v) => String(v).replace(/[(),"]/g, ' ').trim()
 
 /* --- Referentiel geographique ---------------------------------------- */
+/* Les trois tables de reference (provinces, villes, quartiers) sont
+   servies par une fonction edge de Netlify, mise en cache par le CDN.
+   L application n interroge donc plus Supabase a chaque ouverture, et un
+   robot qui martelerait la plateforme frappe le cache au lieu de la base.
+   Si la fonction ne repond pas, on repart sur Supabase exactement comme
+   avant : la protection ne doit jamais devenir un point de panne. */
+let REF_EDGE = null
+function refEdge() {
+  if (REF_EDGE) return REF_EDGE
+  const secours = () =>
+    Promise.all([
+      requete('/provinces' + q({ select: 'id,code,nom_fr,nom_ar', order: 'ordre' })),
+      requete('/villes' + q({ select: 'id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu', order: 'nom_fr' })),
+      requete('/quartiers' + q({ select: 'id,ville_id,nom_fr,nom_ar,groupe,qualite', approuve: 'eq.true', order: 'nom_fr' })),
+    ]).then(([provinces, villes, quartiers]) => ({ provinces, villes, quartiers }))
+  REF_EDGE = fetch('/api/reference', { headers: { accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('reference ' + r.status))))
+    .then((d) => {
+      const ok = d && Array.isArray(d.provinces) && Array.isArray(d.villes) && Array.isArray(d.quartiers)
+      if (!ok || !d.provinces.length || !d.villes.length) throw new Error('reference incomplete')
+      return d
+    })
+    .catch(secours)
+  return REF_EDGE
+}
+
 export async function init() {
   if (REF) return { mode: 'supabase' }
   try {
@@ -121,9 +147,9 @@ export async function init() {
 
   try {
     const [provinces, villes, quartiers] = await Promise.all([
-      requete('/provinces' + q({ select: 'id,code,nom_fr,nom_ar', order: 'ordre' })),
-      requete('/villes' + q({ select: 'id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu', order: 'nom_fr' })),
-      requete('/quartiers' + q({ select: 'id,ville_id,nom_fr,nom_ar,groupe,qualite', approuve: 'eq.true', order: 'nom_fr' })),
+      refEdge().then((d) => d.provinces),
+      refEdge().then((d) => d.villes),
+      refEdge().then((d) => d.quartiers),
     ])
     REF = { provinces, villes, quartiers }
     try { localStorage.setItem(CLE_REF, JSON.stringify({ le: Date.now(), ref: REF })) } catch { /* quota */ }
