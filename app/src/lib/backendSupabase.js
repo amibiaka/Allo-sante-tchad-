@@ -404,7 +404,78 @@ function nouvelleCle() {
   return [...octets].map((o) => o.toString(36).padStart(2, '0')).join('').slice(0, 16)
 }
 
+/* --- Anti-robot Turnstile --------------------------------------------- */
+/* Gratuit, et invisible dans la quasi-totalite des cas. Le script n est
+   charge qu au moment ou l on parle a l authentification, jamais a
+   l ouverture : sur une connexion 2G, un script tiers charge pour rien
+   coute cher. Si Cloudflare est injoignable, on rend null et la requete
+   part sans jeton, ce qui reste valable tant que la protection n est pas
+   activee cote Supabase. */
+const CLE_TURNSTILE = '0x4AAAAAAEr6KKRDx3oez_tT'
+const SRC_TURNSTILE = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+let chargementTurnstile = null
+
+function chargerTurnstile() {
+  if (chargementTurnstile) return chargementTurnstile
+  chargementTurnstile = new Promise((resoudre, rejeter) => {
+    if (typeof window === 'undefined') return rejeter(new Error('pas de fenetre'))
+    if (window.turnstile) return resoudre(window.turnstile)
+    const s = document.createElement('script')
+    s.src = SRC_TURNSTILE
+    s.async = true
+    s.defer = true
+    s.onload = () => resoudre(window.turnstile)
+    s.onerror = () => rejeter(new Error('turnstile injoignable'))
+    document.head.appendChild(s)
+  })
+  return chargementTurnstile
+}
+
+async function jetonCaptcha() {
+  try {
+    const ts = await Promise.race([
+      chargerTurnstile(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('delai')), 10000)),
+    ])
+    if (!ts || typeof ts.render !== 'function') return null
+    /* Position fixe et centree : si un defi doit s afficher, il faut que la
+       personne le voie, meme si le formulaire est plus haut dans la page. */
+    const boite = document.createElement('div')
+    boite.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999'
+    document.body.appendChild(boite)
+    return await new Promise((resoudre) => {
+      let fini = false
+      const finir = (v) => {
+        if (fini) return
+        fini = true
+        try { ts.remove(id) } catch { /* deja retire */ }
+        boite.remove()
+        resoudre(v)
+      }
+      const id = ts.render(boite, {
+        sitekey: CLE_TURNSTILE,
+        appearance: 'interaction-only',
+        callback: finir,
+        'error-callback': () => finir(null),
+        'timeout-callback': () => finir(null),
+      })
+      setTimeout(() => finir(null), 45000)
+    })
+  } catch {
+    return null
+  }
+}
+
 async function authentifier(chemin, corps) {
+  /* Turnstile : Supabase exige un jeton anti-robot sur l inscription, la
+     connexion et le renvoi de lien quand la protection est activee. Le
+     jeton est demande ici, au seul endroit qui parle a l authentification,
+     plutot que dans chaque formulaire. Tant que la protection est
+     desactivee cote Supabase, le jeton est simplement ignore. */
+  if (/^\/(signup|resend)|grant_type=password/.test(chemin)) {
+    const jeton = await jetonCaptcha()
+    if (jeton) corps = { ...corps, gotrue_meta_security: { captcha_token: jeton } }
+  }
   const r = await fetch(AUTH + chemin, {
     method: 'POST',
     headers: { apikey: APIKEY, 'Content-Type': 'application/json' },
