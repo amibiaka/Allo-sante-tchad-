@@ -11,7 +11,7 @@
    index.html garde en cache designe des fichiers /assets/ qui n'existent
    plus apres un nouveau deploiement : l'application restait alors bloquee
    sur "Chargement..." sans aucun moyen de s'en sortir. */
-const VERSION = 'ast-v3'
+const VERSION = 'ast-v4'
 const COQUE = `${VERSION}-coque`
 const ASSETS = `${VERSION}-assets`
 const PAGES = `${VERSION}-pages`
@@ -102,7 +102,29 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
-  // 2. Fichiers avec empreinte (/assets/) : cache d'abord, immuable.
+  // 2. Referentiel (/api/reference) : reseau d abord, cache en secours.
+  //    Ces donnees changent rarement mais elles sont vitales : sans elles
+  //    l application ne sait plus nommer une ville ni un quartier. Garder
+  //    la derniere reponse permet de continuer a servir les gens meme si
+  //    la base est saturee ou hors service. Si tout echoue on laisse la
+  //    requete tomber : le client repart alors sur Supabase.
+  if (url.pathname === BASE + 'api/reference' || url.pathname === '/api/reference') {
+    e.respondWith((async () => {
+      const cache = await caches.open(ASSETS)
+      try {
+        const rep = await avecDelai(fetch(req), DELAI_RESEAU)
+        if (rep && rep.ok) cache.put(req, rep.clone())
+        return rep
+      } catch (err) {
+        const hit = await cache.match(req)
+        if (hit) return hit
+        throw err
+      }
+    })())
+    return
+  }
+
+  // 3. Fichiers avec empreinte (/assets/) : cache d'abord, immuable.
   //    Un 404 ici signifie que la page vient d'un cache perime : on ne le
   //    garde pas, secours.js se charge de tout remettre a plat.
   if (url.pathname.includes('/assets/')) {
@@ -116,7 +138,7 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
-  // 3. Autres ressources statiques : on sert le cache et on rafraichit en fond.
+  // 4. Autres ressources statiques : on sert le cache et on rafraichit en fond.
   if (estAsset(url)) {
     e.respondWith((async () => {
       const cache = await caches.open(ASSETS)
