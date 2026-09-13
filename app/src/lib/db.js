@@ -47,7 +47,8 @@ const NOMS = [
   'adminQuartiers', 'adminCreerQuartier', 'adminMajQuartier', 'adminSupprimerQuartier',
   'adminCreerVille', 'adminNumeros', 'adminMajNumero', 'adminCreerNumero', 'adminSupprimerNumero',
   'adminReglages', 'adminMajReglage', 'adminProfils', 'adminMajProfil', 'adminCreerProfil',
-  'adminEffacerDemo', 'escalader', 'reinitialiser',
+  'adminEffacerDemo', 'escalader',
+  'inscrireDonneur', 'retirerDonneur', 'compteurDonneurs', 'reinitialiser',
 ]
 
 export const db = Object.fromEntries(NOMS.map((n) => [n, appel(n)]))
