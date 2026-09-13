@@ -13,6 +13,7 @@ const Annuaire         = lazy(() => import('./pages/Annuaire'))
 const Ordonnance       = lazy(() => import('./pages/Ordonnance'))
 const SuiviOrdonnance  = lazy(() => import('./pages/SuiviOrdonnance'))
 const ChoixZone        = lazy(() => import('./pages/ChoixZone'))
+const Donneur          = lazy(() => import('./pages/Donneur'))
 const APropos          = lazy(() => import('./pages/APropos'))
 const Transparence     = lazy(() => import('./pages/Transparence'))
 const EspacePro        = lazy(() => import('./pages/pro/EspacePro'))
@@ -28,6 +29,7 @@ const ROUTES = [
   ['/medicament', Ordonnance],
   ['/ordonnance/:code', SuiviOrdonnance],
   ['/zone', ChoixZone],
+  ['/donneur', Donneur],
   ['/a-propos', APropos],
   ['/transparence', Transparence],
   ['/pro', EspacePro],
