@@ -979,3 +979,32 @@ export function abonnerDemandes(_zone, cb) {
     window.removeEventListener('online', surVisible)
   }
 }
+
+/* --- Don du sang ------------------------------------------------------- */
+/* Le registre ne se lit pas : on ne peut qu y entrer, en sortir, et compter
+   les inscrits. Le groupe sanguin est une donnee de sante, il ne transite
+   jamais par une lecture de table, seulement par ces trois fonctions. */
+
+export async function inscrireDonneur({ telephone, groupe, villeCode, nom, quartierId }) {
+  return rpc('inscrire_donneur', {
+    p_telephone: String(telephone || '').trim(),
+    p_groupe: groupe || 'inconnu',
+    p_ville_code: villeCode || null,
+    p_nom: nom || null,
+    p_quartier_id: quartierId || null,
+  })
+}
+
+export async function retirerDonneur(telephone, code) {
+  return rpc('retirer_donneur', {
+    p_telephone: String(telephone || '').trim(),
+    p_code: String(code || '').trim(),
+  })
+}
+
+export async function compteurDonneurs(villeCode) {
+  const r = await rpc('compteur_donneurs', { p_ville_code: villeCode || null })
+  const lignes = Array.isArray(r) ? r : []
+  if (villeCode) return Number((lignes[0] || {}).nombre || 0)
+  return lignes.reduce((n, x) => n + Number(x.nombre || 0), 0)
+}
