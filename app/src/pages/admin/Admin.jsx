@@ -13,6 +13,7 @@ import { naviguer } from '../../lib/router'
 import { Bouton, Entete, Champ, Alerte, Chargement } from '../../components/base'
 import { SelecteurLangue, BoutonSortie } from '../../components/chrome'
 import TableauAdmin from './TableauAdmin'
+import Veille from './Veille'
 import { SectionDemandes, SectionSoignants, SectionGeographie, SectionModeration, SectionNumeros, SectionEquipe, SectionReglages } from './sections'
 
 const CLE_SESSION = 'ast.admin.porte'
@@ -142,6 +143,7 @@ function ConnexionAdmin({ surConnexion, deconnecte }) {
 /* --- 3. Coque du back-office ---------------------------------------- */
 const SECTIONS = [
   ['/', 'tableau', '📊'],
+  ['/veille', 'veille', '📈'],
   ['/demandes', 'demandes', '🆘'],
   ['/soignants', 'soignants', '🩺'],
   ['/geographie', 'geographie', '🗺️'],
@@ -186,6 +188,7 @@ function Coque({ session, sousChemin, surChangement }) {
       </nav>
 
       {sousChemin === '/' && <TableauAdmin session={session} />}
+      {sousChemin === '/veille' && <Veille />}
       {sousChemin === '/demandes' && <SectionDemandes />}
       {sousChemin === '/soignants' && <SectionSoignants />}
       {sousChemin === '/geographie' && <SectionGeographie />}
