@@ -829,3 +829,25 @@ export function abonnerDemandes(_zone, cb) {
   const minuteur = setInterval(async () => { if (await escalader()) cb() }, 30000)
   return () => { abonnes.delete(f); clearInterval(minuteur) }
 }
+
+/* --- Don du sang, en mode demonstration ------------------------------- */
+/* Rien ne part sur le reseau et rien ne persiste : le mode demonstration
+   ne doit jamais laisser croire qu une inscription a ete enregistree. */
+
+const DONNEURS = []
+
+export async function inscrireDonneur({ telephone, villeCode }) {
+  if (!telephone || !villeCode) throw new Error('Champs manquants')
+  DONNEURS.push({ telephone, villeCode })
+  return 'AB'
+}
+
+export async function retirerDonneur(telephone) {
+  const i = DONNEURS.findIndex((d) => d.telephone === telephone)
+  if (i >= 0) DONNEURS.splice(i, 1)
+  return i >= 0
+}
+
+export async function compteurDonneurs(villeCode) {
+  return villeCode ? DONNEURS.filter((d) => d.villeCode === villeCode).length : DONNEURS.length
+}
