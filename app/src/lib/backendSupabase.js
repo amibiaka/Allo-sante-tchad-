@@ -398,6 +398,12 @@ function cleLocale(tel) {
 function poserCleLocale(tel, cle) {
   try { localStorage.setItem(CLE_LOCALE + String(tel).replace(/\D/g, ''), cle) } catch { /* quota */ }
 }
+// Un vrai mot de passe choisi par la personne ne doit jamais rester sur
+// l'appareil ; on efface aussi une eventuelle trace laissee par une
+// version anterieure qui l'y aurait ecrite par erreur.
+function effacerCleLocale(tel) {
+  try { localStorage.removeItem(CLE_LOCALE + String(tel).replace(/\D/g, '')) } catch { /* ignore */ }
+}
 function nouvelleCle() {
   const octets = new Uint8Array(12)
   crypto.getRandomValues(octets)
@@ -582,7 +588,7 @@ export async function connecter({ telephone, identifiant, motDePasse }) {
   } catch (e) {
     throw new Error(/not confirmed|confirm/i.test(e.message) ? 'EMAIL_NON_CONFIRME' : 'IDENTIFIANTS')
   }
-  if (motDePasse) poserCleLocale(saisi, motDePasse)
+  if (motDePasse) effacerCleLocale(saisi)
   ecrireJeton({
     access_token: d.access_token, refresh_token: d.refresh_token,
     expires_at: Date.now() + (d.expires_in || 3600) * 1000,
