@@ -521,5 +521,29 @@
     "suivi": "Suivi",
     "aideWhatsapp": "Envoyer « AIDE » sur WhatsApp",
     "canal": "Nous contacter"
+  },
+  "don": {
+    "titre": "Donner son sang",
+    "intro": "Le manque de poches de sang tue des femmes en couches chaque jour au Tchad. En vous inscrivant, vous acceptez d’être rappelé quand votre groupe manque près de chez vous.",
+    "nom": "Votre nom (facultatif)",
+    "telephone": "Votre numéro de téléphone",
+    "groupe": "Votre groupe sanguin",
+    "inconnu": "Je ne le connais pas",
+    "zone": "Où habitez-vous ?",
+    "consentement": "J’accepte d’être rappelé pour un don de sang. Mon numéro n’est visible que par le service de transfusion.",
+    "envoyer": "Je m’inscris comme donneur",
+    "envoi": "Inscription en cours…",
+    "merci": "Merci, vous êtes inscrit.",
+    "code": "Votre code de retrait",
+    "codeAide": "Notez ces deux lettres. Avec votre numéro, elles vous permettent de quitter le registre à tout moment.",
+    "compteur": "{n} donneurs déjà inscrits dans votre ville",
+    "retrait": "Quitter le registre",
+    "retraitTitre": "Quitter le registre des donneurs",
+    "retraitOk": "C’est fait, vous ne serez plus rappelé.",
+    "retraitEchec": "Numéro ou code incorrect.",
+    "erreur": "L’inscription n’a pas abouti. Réessayez dans un moment.",
+    "garantie": "La plateforme ne met jamais un donneur en relation directe avec un malade. L’appel passe par le service de transfusion.",
+    "accueil": "Donner son sang",
+    "accueilDesc": "S’inscrire comme donneur volontaire"
   }
 }
