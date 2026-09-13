@@ -829,3 +829,89 @@ export function abonnerDemandes(_zone, cb) {
   const minuteur = setInterval(async () => { if (await escalader()) cb() }, 30000)
   return () => { abonnes.delete(f); clearInterval(minuteur) }
 }
+
+/* --- Don du sang, en mode demonstration ------------------------------- */
+/* Rien ne part sur le reseau et rien ne persiste : le mode demonstration
+   ne doit jamais laisser croire qu une inscription a ete enregistree. */
+
+const DONNEURS = []
+
+export async function inscrireDonneur({ telephone, villeCode }) {
+  if (!telephone || !villeCode) throw new Error('Champs manquants')
+  DONNEURS.push({ telephone, villeCode })
+  return 'AB'
+}
+
+export async function retirerDonneur(telephone) {
+  const i = DONNEURS.findIndex((d) => d.telephone === telephone)
+  if (i >= 0) DONNEURS.splice(i, 1)
+  return i >= 0
+}
+
+export async function compteurDonneurs(villeCode) {
+  return villeCode ? DONNEURS.filter((d) => d.villeCode === villeCode).length : DONNEURS.length
+}
+
+/* --- Veille sanitaire (mode demonstration) ---------------------------
+   Meme forme de reponse que le backend reel, calculee sur les fiches de
+   la demonstration. Rien n'est invente : s'il n'y a pas de fiche, l'ecran
+   reste vide, exactement comme il le sera en production tant que rien
+   n'est arrive. */
+
+const habillerVille = (e) => {
+  const v = villeParId(e.ville_id)
+  return { ...e, villeNom: v ? v.nom_fr : null, villeCode: v ? v.code : null }
+}
+
+const motifsDe = (d) => ((d.categories || []).length ? d.categories : ['non_precise'])
+
+export async function veilleSyndromique(jours = 30) {
+  const l = await adminDemandes({ jours: Number(jours) || 30 })
+  const paquets = new Map()
+  for (const d of l) {
+    const jour = new Date(d.created_at).toISOString().slice(0, 10)
+    for (const c of motifsDe(d)) {
+      const cle = [jour, d.ville_id, c, d.niveau].join('|')
+      const e = paquets.get(cle)
+        || { jour, ville_id: d.ville_id, categorie: c, niveau: d.niveau, nombre: 0 }
+      e.nombre += 1
+      paquets.set(cle, e)
+    }
+  }
+  return [...paquets.values()].map(habillerVille)
+    .sort((a, b) => (a.jour === b.jour ? b.nombre - a.nombre : (a.jour < b.jour ? 1 : -1)))
+}
+
+export async function veilleAnomalies() {
+  const l = await adminDemandes({ jours: 35 })
+  const maintenant = Date.now()
+  const paquets = new Map()
+  for (const d of l) {
+    const age = (maintenant - new Date(d.created_at).getTime()) / 864e5
+    for (const c of motifsDe(d)) {
+      const cle = d.ville_id + '|' + c
+      const e = paquets.get(cle) || { ville_id: d.ville_id, categorie: c, semaine: 0, avant: 0 }
+      if (age <= 7) e.semaine += 1
+      else e.avant += 1
+      paquets.set(cle, e)
+    }
+  }
+  return [...paquets.values()]
+    .map((e) => {
+      const moyenne = e.avant / 4
+      return habillerVille({
+        ville_id: e.ville_id,
+        categorie: e.categorie,
+        semaine: e.semaine,
+        moyenne_4sem: Number(moyenne.toFixed(2)),
+        rapport: moyenne > 0 ? Number((e.semaine / moyenne).toFixed(2)) : 0,
+      })
+    })
+    .filter((e) => e.semaine >= 5 && e.rapport >= 2)
+    .sort((a, b) => b.rapport - a.rapport)
+}
+
+export async function veilleFraicheur() {
+  const l = await adminDemandes({ jours: 3650 })
+  return l.length ? l[0].created_at : null
+}

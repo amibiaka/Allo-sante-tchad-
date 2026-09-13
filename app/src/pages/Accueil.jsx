@@ -157,6 +157,20 @@ export default function Accueil() {
         </div>
       )}
 
+      {/* --- Don du sang ------------------------------------------------- */}
+      {/* Placee sous les gestes de soin et au-dessus de l espace soignant :
+          c est une action de citoyen, pas une urgence. Elle ne doit jamais
+          passer devant le bouton qui appelle a l aide. */}
+      <Lien vers="/donneur" className="mt-3 block">
+        <div className="carte flex items-center gap-3 p-3">
+          <span className="text-2xl" aria-hidden="true">🩸</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold leading-tight">{t('don.accueil')}</span>
+            <span className="aide block">{t('don.accueilDesc')}</span>
+          </span>
+        </div>
+      </Lien>
+
       {/* --- Espace soignant -------------------------------------------- */}
       <Lien vers="/pro" className="mt-3 block">
         <div className="carte flex items-center gap-3 p-3">

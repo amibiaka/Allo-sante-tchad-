@@ -979,3 +979,70 @@ export function abonnerDemandes(_zone, cb) {
     window.removeEventListener('online', surVisible)
   }
 }
+
+/* --- Don du sang ------------------------------------------------------- */
+/* Le registre ne se lit pas : on ne peut qu y entrer, en sortir, et compter
+   les inscrits. Le groupe sanguin est une donnee de sante, il ne transite
+   jamais par une lecture de table, seulement par ces trois fonctions. */
+
+export async function inscrireDonneur({ telephone, groupe, villeCode, nom, quartierId }) {
+  return rpc('inscrire_donneur', {
+    p_telephone: String(telephone || '').trim(),
+    p_groupe: groupe || 'inconnu',
+    p_ville_code: villeCode || null,
+    p_nom: nom || null,
+    p_quartier_id: quartierId || null,
+  })
+}
+
+export async function retirerDonneur(telephone, code) {
+  return rpc('retirer_donneur', {
+    p_telephone: String(telephone || '').trim(),
+    p_code: String(code || '').trim(),
+  })
+}
+
+export async function compteurDonneurs(villeCode) {
+  const r = await rpc('compteur_donneurs', { p_ville_code: villeCode || null })
+  const lignes = Array.isArray(r) ? r : []
+  if (villeCode) return Number((lignes[0] || {}).nombre || 0)
+  return lignes.reduce((n, x) => n + Number(x.nombre || 0), 0)
+}
+
+/* --- Veille sanitaire -------------------------------------------------
+   Les trois appels de l'ecran de veille du back-office. L'agregation est
+   faite dans la base : ce qui traverse le reseau, ce sont des comptages,
+   jamais une fiche. Les fonctions SQL refusent de repondre hors du
+   perimetre du compte, et excluent les fiches de demonstration.
+   Le nom de la ville est recolle ici, cote client, a partir du
+   referentiel deja charge : inutile de le faire voyager depuis la base. */
+
+function nommerVilles(lignes) {
+  const parId = new Map((referentiel().villes || []).map((v) => [v.id, v]))
+  return (lignes || []).map((r) => {
+    const v = parId.get(r.ville_id)
+    return { ...r, villeNom: v ? v.nom_fr : null, villeCode: v ? v.code : null }
+  })
+}
+
+export async function veilleSyndromique(jours = 30) {
+  return nommerVilles(await rpc('veille_syndromique', { p_jours: Number(jours) || 30 }))
+}
+
+export async function veilleAnomalies() {
+  return nommerVilles(await rpc('veille_anomalies', {}))
+}
+
+/* La date de la derniere demande reelle du perimetre. Une colonne, une
+   ligne. C'est l'argument le moins cher de la plateforme, et le plus
+   solide : la donnee est d'il y a quelques minutes, pas du mois dernier. */
+export async function veilleFraicheur() {
+  const l = await requete('/demandes' + q({
+    select: 'created_at',
+    order: 'created_at.desc',
+    limit: '1',
+    demo: 'not.is.true',
+    ...(await perimetreAdmin()),
+  }))
+  return (l && l[0] && l[0].created_at) || null
+}
