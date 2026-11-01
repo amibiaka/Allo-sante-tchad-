@@ -56,7 +56,7 @@ export default function Accueil() {
             className="mb-2 h-14 w-14 rounded-2xl"
           />
           <h1 className="text-2xl font-black leading-tight text-nil-700">{t('app.nom')}</h1>
-          <p className="text-[15px] font-semibold text-nil-900/60" lang={t('app.sousTitre') === 'ألو صحة تشاد' ? 'ar' : 'fr'}>
+          <p className="text-[15px] font-semibold text-nil-900/60">
             {t('app.sousTitre')}
           </p>
         </div>
@@ -157,6 +157,20 @@ export default function Accueil() {
         </div>
       )}
 
+      {/* --- Vaccination ------------------------------------------------- */}
+      {/* Une seule carte, au meme rang que le don du sang : le carnet des
+          enfants est un geste de famille, pas une urgence. */}
+      <Lien vers="/vaccins" className="mt-4 block">
+        <div className="carte flex items-center gap-3 p-3">
+          <span className="text-2xl" aria-hidden="true">💉</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold leading-tight">{t('vac.accueil')}</span>
+            <span className="aide block">{t('vac.accueilDesc')}</span>
+          </span>
+          <span aria-hidden="true" className="text-nil-600">›</span>
+        </div>
+      </Lien>
+
       {/* --- Don du sang ------------------------------------------------- */}
       {/* Placee sous les gestes de soin et au-dessus de l espace soignant :
           c est une action de citoyen, pas une urgence. Elle ne doit jamais
@@ -181,6 +195,11 @@ export default function Accueil() {
           </span>
           <span aria-hidden="true" className="text-nil-600">›</span>
         </div>
+      </Lien>
+
+      {/* Signalement communautaire : un simple lien, pas une carte. */}
+      <Lien vers="/alerte" className="mt-3 block text-center text-[13px] font-semibold text-nil-600 underline">
+        📣 {t('alerte.lienAccueil')}
       </Lien>
 
       <InstallerPWA />

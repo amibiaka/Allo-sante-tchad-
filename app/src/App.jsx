@@ -14,6 +14,8 @@ const Ordonnance       = lazy(() => import('./pages/Ordonnance'))
 const SuiviOrdonnance  = lazy(() => import('./pages/SuiviOrdonnance'))
 const ChoixZone        = lazy(() => import('./pages/ChoixZone'))
 const Donneur          = lazy(() => import('./pages/Donneur'))
+const Vaccins          = lazy(() => import('./pages/Vaccins'))
+const Alerte           = lazy(() => import('./pages/Alerte'))
 const APropos          = lazy(() => import('./pages/APropos'))
 const Transparence     = lazy(() => import('./pages/Transparence'))
 const EspacePro        = lazy(() => import('./pages/pro/EspacePro'))
@@ -30,6 +32,8 @@ const ROUTES = [
   ['/ordonnance/:code', SuiviOrdonnance],
   ['/zone', ChoixZone],
   ['/donneur', Donneur],
+  ['/vaccins', Vaccins],
+  ['/alerte', Alerte],
   ['/a-propos', APropos],
   ['/transparence', Transparence],
   ['/pro', EspacePro],

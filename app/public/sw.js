@@ -1,5 +1,5 @@
 /* =====================================================================
- * Allo Sante Tchad - service worker
+ * Afiya - service worker
  * Objectif : la 2e ouverture doit etre instantanee meme en 2G, et
  * l'interface doit rester consultable hors ligne.
  * Aucune donnee medicale n'est mise en cache par ce fichier : seules
@@ -11,7 +11,7 @@
    index.html garde en cache designe des fichiers /assets/ qui n'existent
    plus apres un nouveau deploiement : l'application restait alors bloquee
    sur "Chargement..." sans aucun moyen de s'en sortir. */
-const VERSION = 'ast-v4'
+const VERSION = 'ast-v5'
 const COQUE = `${VERSION}-coque`
 const ASSETS = `${VERSION}-assets`
 const PAGES = `${VERSION}-pages`

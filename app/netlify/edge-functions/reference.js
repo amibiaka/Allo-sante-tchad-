@@ -14,7 +14,7 @@ const CLE = lireEnv('SUPABASE_ANON_KEY') || lireEnv('VITE_SUPABASE_ANON_KEY')
 
 const CHEMINS = {
   provinces: '/provinces?select=id,code,nom_fr,nom_ar&order=ordre',
-  villes: '/villes?select=id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu&order=nom_fr',
+  villes: '/villes?select=id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu,district_id&order=nom_fr',
   quartiers: '/quartiers?select=id,ville_id,nom_fr,nom_ar,groupe,qualite&approuve=eq.true&order=nom_fr',
 }
 
@@ -34,9 +34,13 @@ export default async function reference() {
   }
 
   try {
+    /* district_id n'existe qu'apres la migration 11 : si la base ne l'a
+       pas encore, on relit sans, plutot que de priver l'application de
+       ses villes. */
+    const lireVilles = () => lire(CHEMINS.villes).catch(() => lire(CHEMINS.villes.replace(',district_id', '')))
     const [provinces, villes, quartiers] = await Promise.all([
       lire(CHEMINS.provinces),
-      lire(CHEMINS.villes),
+      lireVilles(),
       lire(CHEMINS.quartiers),
     ])
     return new Response(JSON.stringify({ provinces, villes, quartiers }), {

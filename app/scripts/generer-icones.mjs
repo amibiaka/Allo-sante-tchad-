@@ -1,5 +1,5 @@
 /* =====================================================================
- * Allo Sante Tchad — fabrique les icones de l'application.
+ * Afiya — fabrique les icones de l'application.
  *   node scripts/generer-icones.mjs   (lance aussi par « npm run build »)
  * Aucune dependance : le PNG est ecrit a la main, zlib est dans Node.
  * On dessine a 2048 puis on reduit, pour des bords nets sans bibliotheque.

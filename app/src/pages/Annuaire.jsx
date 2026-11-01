@@ -10,9 +10,15 @@ import { naviguer, Lien } from '../lib/router'
 import { Bouton, Entete, Selecteur, Chargement, Vide, Modale, Champ, Alerte } from '../components/base'
 import { FichePro } from '../components/pro'
 import { libelleZone } from '../components/zone'
+import { ListeCentres } from '../components/centres'
 
-export default function Annuaire() {
+export default function Annuaire({ requete }) {
   const { t, nom } = useLangue()
+  /* Deux volets : les soignants inscrits sur la plateforme, et la liste
+     officielle des centres de sante et hopitaux du ministere. */
+  const ongletDemande = requete?.get('onglet') === 'centres' ? 'centres' : 'soignants'
+  const [volet, setVolet] = useState(ongletDemande)
+  useEffect(() => { setVolet(ongletDemande) }, [ongletDemande])
   const [geo, setGeo] = useState(null)
   const [zone, setZone] = useState(prefs.zone())
   const [type, setType] = useState('')
@@ -54,6 +60,28 @@ export default function Annuaire() {
     <div>
       <Entete titre={t('annuaire.titre')} sousTitre={zoneTexte || undefined} />
 
+      <div className="mb-3 flex gap-2">
+        {[['soignants', '🩺 ' + t('annuaire.voletSoignants')], ['centres', '🏥 ' + t('annuaire.voletCentres')]].map(([v, l]) => (
+          <button key={v} onClick={() => setVolet(v)} aria-pressed={volet === v}
+                  className={`flex-1 rounded-xl border-2 py-2 text-sm font-bold ${volet === v ? 'border-nil-600 bg-nil-600 text-white' : 'border-sable-300 bg-white'}`}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {volet === 'centres' && (
+        <div>
+          <button onClick={() => naviguer('/zone?retour=/annuaire?onglet=centres')}
+                  className="mb-3 flex w-full items-center gap-2 rounded-xl border-2 border-sable-300 bg-white px-3 py-2.5 text-start">
+            <span aria-hidden="true">📍</span>
+            <span className="min-w-0 flex-1 truncate font-bold">{zoneTexte || t('accueil.choisirZone')}</span>
+            <span className="shrink-0 text-[13px] font-bold text-nil-600 underline">{t('accueil.changerZone')}</span>
+          </button>
+          <ListeCentres zone={zone} villeNom={geo && zone?.villeCode ? villeParCode(geo, zone.villeCode)?.fr : null} />
+        </div>
+      )}
+
+      {volet === 'soignants' && (<>
       {/* Filtres */}
       <div className="mb-3 space-y-2">
         <button onClick={() => naviguer('/zone?retour=/annuaire')}
@@ -118,6 +146,8 @@ export default function Annuaire() {
           </Bouton>
         </div>
       )}
+
+      </>)}
 
       <ModaleSignalement pro={signalement} onFermer={() => setSignalement(null)} />
     </div>

@@ -1,11 +1,20 @@
-# Allo Santé Tchad — ألو صحة تشاد
+# Afiya — عافية · Santé Tchad
+
+*(anciennement « Allo Santé Tchad » ; renommée Afiya en novembre 2026, le
+domaine afiyatchad.com n'a pas changé)*
 
 **Trouver et contacter en moins de deux minutes un soignant, une pharmacie ou un
-centre de santé proche, partout au Tchad.**
+centre de santé proche, partout au Tchad. Suivre la vaccination de ses enfants.
+Prévenir les autorités d'un événement sanitaire.**
 
 Application web (PWA) pensée pour la 2G, les petits téléphones Android et les
-personnes qui ne lisent pas. Gratuite, sans publicité, sans inscription pour le
-patient. Français et arabe, avec message vocal partout où l'on demande du texte.
+personnes qui ne lisent pas, livrée aussi en application Android (dossier
+`android/`). Gratuite, sans publicité, sans inscription pour les familles.
+Français, anglais, arabe et arabe tchadien, avec message vocal partout où l'on
+demande du texte.
+
+**Moteurs (novembre 2026)** : Vite 8, Preact 11 (API React 19), Tailwind 4,
+Supabase (PostgreSQL, RLS), Netlify. Aucune dépendance d'exécution hors Preact.
 
 > ⚠️ **Cette plateforme ne remplace pas les services d'urgence officiels.**
 > Elle met en relation. Elle ne donne aucun conseil médical, ne vend rien et ne
@@ -48,6 +57,13 @@ de ces fichiers **l'un après l'autre**, en cliquant sur **Run** à chaque fois 
 | 1 | `supabase/01_installation.sql` | Tables, sécurité, stockage des photos et vocaux |
 | 2 | `supabase/02_donnees_geo.sql` | 23 provinces, 23 chefs-lieux, 164 quartiers, 69 services de secours, numéros d'urgence |
 | 3 | `supabase/03_donnees_demo.sql` | *Facultatif* — 29 fiches de démonstration à N'Djamena, Moundou, Sarh et Abéché |
+| 4 | `supabase/07_durcissement.sql` | Droits minimaux de la clé publique, limites de débit, fonctions fermées |
+| 5 | `supabase/08_villes_departements.sql` | 39 chefs-lieux de département (62 villes) |
+| 6 | `supabase/09_confirmation_email.sql` | Compte soignant confirmé par courriel |
+| 7 | `supabase/10_quatre_fonctions.sql` | Donneurs de sang, relevés de prix, veille syndromique |
+| 8 | `supabase/11_sante_referentiel.sql` | 126 districts sanitaires du ministère, liaison aux villes |
+| 9 | `supabase/12a_roles_institutionnels.sql` puis `12_programmes_et_institutions.sql` | Rôles du ministère et des Ordres, publications, campagnes, entraide, signalements |
+| 10 | `supabase/13_pilote_operationnel.sql` | Phase pilote : prolonge les inscriptions en cours |
 
 Les autres fichiers du dossier servent plus tard : `04_effacer_demo.sql` (avant
 la mise en service réelle), `05_creer_administrateur.sql` (étape 5 ci-dessous)
@@ -177,14 +193,48 @@ Résolue** (ou *Sans réponse*). Une **urgence vitale sans réponse au bout de
 toute la ville, signalée en rouge au back-office, et le patient reçoit à l'écran
 la liste des centres de santé à appeler directement.
 
-### Le back-office — invisible du public, à trois niveaux
+### Le back-office — invisible du public, administrateurs et institutions
 
+Administrateurs opérationnels :
 - **Super administrateur** — national, distribue les rôles, règle la plateforme.
 - **Administrateur de province** — ne voit que sa province.
 - **Administrateur de ville** — ne voit que sa ville.
 
+Institutions (novembre 2026), chacune avec ses seuls écrans :
+- **Autorité nationale** (ministère) et **délégation provinciale** — veille en
+  temps réel, signalements communautaires à trier, campagnes de vaccination,
+  publications, validation des agents publics (infirmiers, sages-femmes,
+  centres de santé).
+- **Ordre des médecins** et **Ordre des pharmaciens** — valident, prolongent,
+  suspendent ou refusent les inscriptions de leur profession ; publient des
+  directives à leurs membres.
+- **Centre national de santé numérique** — attribue les rôles, règle la
+  plateforme, lit le journal.
+
+Chaque décision passe par une fonction de la base qui vérifie le rôle de
+l'appelant et l'inscrit au journal : l'écran n'est qu'une fenêtre.
+
 Il valide les soignants, complète les quartiers et les numéros manquants, modère
 les signalements et les photos, exporte les statistiques en CSV.
+
+### Vaccination, entraide, signalement (novembre 2026)
+
+- **Carnet de vaccination** (`#/vaccins`) : les enfants du téléphone, le
+  calendrier du PEV tchadien (`src/data/vaccins.json`, à faire valider par la
+  Direction de la vaccination), les doses faites, en retard, à venir, un
+  rappel dans le calendrier du téléphone. Le carnet ne quitte jamais le
+  téléphone ; la famille peut accepter de déclarer chaque dose de façon
+  anonyme (ville, vaccin, âge) pour la veille nationale.
+- **Centres de santé** (`#/annuaire?onglet=centres`) : la liste officielle du
+  ministère (1 985 formations, 126 districts, GPS), le plus proche en premier,
+  hors ligne compris. Source et corrections : `scripts/generer-sante.mjs`.
+- **Entraide entre soignants** (espace soignant, onglet Entraide) : un agent
+  isolé décrit une situation sans identifier le patient, les médecins
+  répondent, la suite peut se faire sur WhatsApp. Un numéro de téléphone dans
+  le texte est refusé par la base.
+- **Signalement communautaire** (`#/alerte`) : plusieurs malades, décès
+  inhabituels, animaux morts, eau suspecte. Trié par les autorités de la
+  province dans le back-office.
 
 **Aucun lien de l'application ne mène au back-office.** Il vit sur une adresse
 que vous choisissez (`VITE_ADMIN_PATH`, par défaut `#/gestion`), protégée par une
@@ -260,11 +310,11 @@ connexion (clé USB, pièce jointe, partage WhatsApp).
 - Testé sur un écran de **360 px**, cibles tactiles de 48 px minimum, fort
   contraste pour la lecture en plein soleil.
 
-### Encore plus léger (facultatif)
+### Preact (fait en novembre 2026)
 
-Remplacer React par **Preact** fait tomber le socle de ~45 Ko à ~5 Ko compressés.
-Six lignes sont prêtes, commentées, dans `vite.config.js` : `npm i preact`, on
-les décommente, et c'est tout.
+Le socle est passé de 45 Ko à 8 Ko compressés en remplaçant React par
+**Preact** (`vite.config.js`, alias `react` → `preact/compat`). L'API reste
+celle de React 19 : rien n'a changé dans les composants.
 
 ---
 
@@ -299,12 +349,14 @@ src/
   pages/            écrans (accueil, urgence, suivi, annuaire, pharmacie, pro/, admin/)
   components/       briques d'interface, sélecteur de zone, vocal, photo
   lib/              routeur, i18n, accès aux données, liens WhatsApp, médias, réseau
-  i18n/             fr.json et ar.json (421 clés, parité vérifiée)
-  data/             geo.json (23 provinces), urgences.json, demo.json
-supabase/           SQL à coller dans l'ordre : installation, données, démo,
-                    effacement de la démo, administrateur, vérification
+  i18n/             fr, en, ar, ar-td (787 clés, parité fr/en/ar vérifiée)
+  data/             geo.json (23 provinces), urgences.json, demo.json,
+                    sante.json (1 985 formations sanitaires), vaccins.json (calendrier PEV)
+supabase/           SQL à coller dans l'ordre (01 à 13, voir le tableau plus haut)
 netlify/functions/  escalade des urgences (5 min) et purge des médias (nuit)
-scripts/            génération du SQL géographique, contrôle de poids, build fichier unique
+netlify/edge-functions/  référentiel géographique servi par le CDN
+android/            configuration de l'application Android (Trusted Web Activity)
+scripts/            SQL géographique, référentiel sanitaire, icônes, textes, poids, build fichier unique
 ```
 
 Modifier la géographie : éditez `src/data/geo.json`, puis `npm run geo:sql`
@@ -319,6 +371,7 @@ npm run build        # site de production dans dist/
 npm run check:size   # vérifie le budget bas débit de la page d'accueil
 npm run build:demo   # application entière dans un seul fichier HTML
 npm run geo:sql      # régénère le SQL géographique depuis geo.json
+node scripts/generer-sante.mjs fichier.xlsx   # régénère sante.json et 11_sante_referentiel.sql
 ```
 
 ## Vie privée et sécurité

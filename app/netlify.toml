@@ -1,5 +1,5 @@
 # =====================================================================
-#  Allo Sante Tchad - configuration Netlify
+#  Afiya - configuration Netlify
 #  Rien a modifier ici : tout se regle dans les variables
 #  d'environnement du tableau de bord Netlify.
 # =====================================================================
@@ -10,7 +10,7 @@
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
 
 # Application monopage : toute URL renvoie vers index.html.
 # (Le routeur interne utilise des ancres #/ donc ceci est une simple

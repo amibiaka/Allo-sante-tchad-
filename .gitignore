@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-demo/
+dist-demo-tmp/
+.netlify/
+.env
+.env.*
+*.log
+.DS_Store
+# Cle de signature Android : jamais dans le depot
+*.keystore
+*.jks
+android/app/
+android/build/
+android/.gradle/

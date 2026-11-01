@@ -1,9 +1,9 @@
 {
-  "name": "allo-sante-tchad",
+  "name": "afiya",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Allo Sante Tchad - plateforme d'urgence et de mise en relation sante pour le Tchad (PWA bas debit, FR/AR, zero dependance hors React)",
+  "description": "Afiya - plateforme de sante du Tchad : urgences, soignants proches, ordonnances, vaccination, veille sanitaire (PWA bas debit, FR/EN/AR)",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -15,16 +15,18 @@
     "icones": "node scripts/generer-icones.mjs"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "preact": "^11.1.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "terser": "^5.36.0",
-    "vite": "^5.4.11"
+    "@tailwindcss/postcss": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "postcss": "^8.5.32",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.3",
+    "terser": "^5.51.2",
+    "vite": "^8.3.5",
+    "xlsx": "^0.18.5"
   },
   "engines": {
     "node": ">=18"

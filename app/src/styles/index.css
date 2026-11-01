@@ -1,6 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* Tailwind 4 : la configuration JavaScript (palette, polices, variantes)
+   reste lue par cette directive. Les classes `rtl:`, `ltr:` et `lite:`
+   sont redeclarees ci-dessous en CSS natif, forme recommandee en v4. */
+@config "../../tailwind.config.js";
+@custom-variant rtl ([dir="rtl"] &);
+@custom-variant ltr ([dir="ltr"] &);
+@custom-variant lite ([data-lite="1"] &);
+
+/* v4 a change deux valeurs par defaut dont l'interface dependait :
+   la couleur de bordure (currentColor au lieu d'un gris) et l'epaisseur
+   d'anneau de focus (1 px au lieu de 3). On retablit l'ancien rendu. */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: #E7E2D6;
+  }
+  button, [role="button"] { cursor: pointer; }
+}
 
 @layer base {
   html { -webkit-tap-highlight-color: transparent; }

@@ -49,7 +49,14 @@ const NOMS = [
   'adminReglages', 'adminMajReglage', 'adminProfils', 'adminMajProfil', 'adminCreerProfil',
   'adminEffacerDemo', 'escalader',
   'inscrireDonneur', 'retirerDonneur', 'compteurDonneurs',
-  'veilleSyndromique', 'veilleAnomalies', 'veilleFraicheur', 'reinitialiser',
+  'veilleSyndromique', 'veilleAnomalies', 'veilleFraicheur',
+  // Programmes et institutions (novembre 2026)
+  'publications', 'campagnesActives', 'declarerVaccin', 'signalerEvenement',
+  'casEntraide', 'creerCas', 'reponsesCas', 'repondreCas', 'cloreCas', 'contactCas',
+  'institutionStats', 'prosAValider', 'validerPro', 'attribuerRole',
+  'adminPublications', 'enregistrerPublication', 'supprimerPublication',
+  'adminCampagnes', 'enregistrerCampagne', 'evenements', 'trierEvenement', 'veilleVaccination',
+  'importerFormations', 'compterFormations', 'reinitialiser',
 ]
 
 export const db = Object.fromEntries(NOMS.map((n) => [n, appel(n)]))

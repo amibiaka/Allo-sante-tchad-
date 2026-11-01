@@ -124,7 +124,8 @@ function refEdge() {
   const secours = () =>
     Promise.all([
       requete('/provinces' + q({ select: 'id,code,nom_fr,nom_ar', order: 'ordre' })),
-      requete('/villes' + q({ select: 'id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu', order: 'nom_fr' })),
+      requete('/villes' + q({ select: 'id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu,district_id', order: 'nom_fr' }))
+        .catch(() => requete('/villes' + q({ select: 'id,province_id,code,nom_fr,nom_ar,lat,lng,chef_lieu', order: 'nom_fr' }))),
       requete('/quartiers' + q({ select: 'id,ville_id,nom_fr,nom_ar,groupe,qualite', approuve: 'eq.true', order: 'nom_fr' })),
     ]).then(([provinces, villes, quartiers]) => ({ provinces, villes, quartiers }))
   REF_EDGE = fetch('/api/reference', { headers: { accept: 'application/json' } })
@@ -1045,4 +1046,181 @@ export async function veilleFraicheur() {
     ...(await perimetreAdmin()),
   }))
   return (l && l[0] && l[0].created_at) || null
+}
+
+/* =====================================================================
+ * PROGRAMMES ET INSTITUTIONS (novembre 2026)
+ * Publications, campagnes de vaccination, declarations anonymes,
+ * entraide entre soignants, signalement communautaire, gouvernance.
+ * Tout ce qui est decision passe par une fonction SQL journalisee.
+ * ===================================================================== */
+const provinceParCode = (code) => referentiel().provinces.find((p) => p.code === code) || null
+const nomProvince = (id) => referentiel().provinces.find((p) => p.id === id)?.nom_fr || null
+const nomVille = (id) => referentiel().villes.find((v) => v.id === id)?.nom_fr || null
+
+/* --- Publications (lecture publique / soignants) ---------------------- */
+export async function publications({ type, limite = 20 } = {}) {
+  const p = { select: 'id,type,audience,titre,corps,lien,province_id,auteur_role,publie_le,expire_le',
+              order: 'publie_le.desc', limit: String(limite) }
+  if (type) p.type = Array.isArray(type) ? 'in.(' + type.join(',') + ')' : 'eq.' + type
+  const l = await requete('/publications' + q(p)) || []
+  return l.map((x) => ({ ...x, province_nom: nomProvince(x.province_id) }))
+}
+
+/* --- Campagnes actives pour une province (null = tout voir) ----------- */
+export async function campagnesActives({ provinceCode } = {}) {
+  const prov = provinceCode ? provinceParCode(provinceCode) : null
+  const p = { select: 'id,nom,vaccins,age_min_mois,age_max_mois,province_id,district_ids,debut,fin,lieux,message,statut',
+              statut: 'eq.publiee', fin: 'gte.' + new Date().toISOString().slice(0, 10), order: 'debut.asc' }
+  if (prov) p.or = `(province_id.is.null,province_id.eq.${prov.id})`
+  const l = await requete('/campagnes_vaccination' + q(p)) || []
+  return l.map((c) => ({ ...c, province_nom: nomProvince(c.province_id) }))
+}
+
+export const declarerVaccin = ({ villeCode, vaccin, dose, ageMois, aLHeure }) =>
+  rpc('declarer_vaccin', { p_ville_code: villeCode, p_vaccin: vaccin, p_dose: dose, p_age_mois: ageMois, p_a_l_heure: !!aLHeure })
+
+/* --- Signalement communautaire ---------------------------------------- */
+export const signalerEvenement = (p) => rpc('signaler_evenement', { p })
+
+/* --- Entraide entre soignants ----------------------------------------- */
+const SEL_CAS = 'id,code,auteur_pro,ville_id,province_id,specialite,urgence,titre,description,whatsapp_ok,statut,nb_reponses,created_at,updated_at,professionnels!entraide_cas_auteur_pro_fkey(nom,type)'
+const habillerCas = (c) => ({ ...c, auteur_nom: c.professionnels?.nom ?? null, auteur_type: c.professionnels?.type ?? null,
+  ville_nom: nomVille(c.ville_id), province_nom: nomProvince(c.province_id) })
+
+export async function casEntraide({ statut, miens = false, limite = 50 } = {}) {
+  const p = { select: SEL_CAS, order: 'updated_at.desc', limit: String(limite) }
+  if (statut) p.statut = statut === 'actifs' ? 'in.(ouvert,repondu)' : 'eq.' + statut
+  if (miens) { const s = await sessionCourante(); if (s?.pro?.id) p.auteur_pro = 'eq.' + s.pro.id }
+  const l = await requete('/entraide_cas' + q(p)) || []
+  return l.map(habillerCas)
+}
+
+export async function creerCas({ specialite, urgence, titre, description, whatsappOk }) {
+  const s = await sessionCourante()
+  if (!s?.pro?.id) throw new Error('PAS_DE_FICHE')
+  const l = await requete('/entraide_cas' + q({ select: SEL_CAS }), {
+    methode: 'POST', entetes: { Prefer: 'return=representation' },
+    corps: { auteur_pro: s.pro.id, specialite: specialite || null, urgence: Number(urgence) || 2,
+             titre, description, whatsapp_ok: !!whatsappOk },
+  })
+  return habillerCas(l?.[0])
+}
+
+export async function reponsesCas(casId) {
+  const l = await requete('/entraide_reponses' + q({
+    select: 'id,cas_id,auteur_pro,texte,created_at,professionnels!entraide_reponses_auteur_pro_fkey(nom,type,statut)',
+    cas_id: 'eq.' + casId, order: 'created_at.asc' })) || []
+  return l.map((r) => ({ ...r, auteur_nom: r.professionnels?.nom ?? null, auteur_type: r.professionnels?.type ?? null }))
+}
+
+export async function repondreCas({ casId, texte }) {
+  const s = await sessionCourante()
+  if (!s?.pro?.id) throw new Error('PAS_DE_FICHE')
+  const l = await requete('/entraide_reponses', {
+    methode: 'POST', entetes: { Prefer: 'return=representation' },
+    corps: { cas_id: casId, auteur_pro: s.pro.id, texte },
+  })
+  return l?.[0]
+}
+
+export async function cloreCas(casId) {
+  const l = await requete('/entraide_cas' + q({ select: 'id,statut', id: 'eq.' + casId }), {
+    methode: 'PATCH', entetes: { Prefer: 'return=representation' },
+    corps: { statut: 'clos', clos_le: new Date().toISOString() },
+  })
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  return true
+}
+
+export const contactCas = (casId) => rpc('contact_cas', { p_cas: casId })
+
+/* --- Gouvernance : institutions --------------------------------------- */
+export const institutionStats = () => rpc('institution_stats')
+
+export async function prosAValider(statut = 'provisoire') {
+  const l = await rpc('pros_a_valider', { p_statut: statut }) || []
+  return l.map((p) => habiller({ ...p, ville_nom: nomVille(p.ville_id), province_nom: nomProvince(p.province_id) }))
+}
+
+export const validerPro = (id, decision, note) =>
+  rpc('valider_professionnel', { p_id: id, p_decision: decision, p_note: note || null })
+
+export const attribuerRole = (profilId, role, { provinceCode, villeCode } = {}) =>
+  rpc('attribuer_role', { p_profil: profilId, p_role: role,
+    p_province: provinceCode ? provinceParCode(provinceCode)?.id ?? null : null,
+    p_ville: villeCode ? villeParCode(villeCode)?.id ?? null : null })
+
+/* Publications : gestion (brouillons compris, perimetre par RLS) */
+export async function adminPublications() {
+  const l = await requete('/publications' + q({ select: '*', order: 'updated_at.desc', limit: '200' })) || []
+  return l.map((x) => ({ ...x, province_nom: nomProvince(x.province_id) }))
+}
+export async function enregistrerPublication(p) {
+  const corps = { type: p.type, audience: p.audience, titre: p.titre, corps: p.corps, lien: p.lien || null,
+    province_id: p.provinceCode ? provinceParCode(p.provinceCode)?.id ?? null : null,
+    publie: !!p.publie, expire_le: p.expire_le || null }
+  const l = p.id
+    ? await requete('/publications' + q({ select: '*', id: 'eq.' + p.id }), { methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps })
+    : await requete('/publications', { methode: 'POST', entetes: { Prefer: 'return=representation' }, corps })
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('publication.' + (p.id ? 'maj' : 'creation'), 'publication', l[0].id, { titre: p.titre, publie: !!p.publie })
+  return l[0]
+}
+export async function supprimerPublication(id) {
+  await requete('/publications' + q({ id: 'eq.' + id }), { methode: 'DELETE' })
+  journaliser('publication.suppression', 'publication', id, null)
+  return true
+}
+
+/* Campagnes : gestion */
+export async function adminCampagnes() {
+  const l = await requete('/campagnes_vaccination' + q({ select: '*', order: 'debut.desc', limit: '200' })) || []
+  return l.map((c) => ({ ...c, province_nom: nomProvince(c.province_id) }))
+}
+export async function enregistrerCampagne(c) {
+  const corps = { nom: c.nom, vaccins: c.vaccins || [], age_min_mois: Number(c.age_min_mois) || 0,
+    age_max_mois: Number(c.age_max_mois) || 59,
+    province_id: c.provinceCode ? provinceParCode(c.provinceCode)?.id ?? null : null,
+    district_ids: c.district_ids || [], debut: c.debut, fin: c.fin, lieux: c.lieux || null, message: c.message || null,
+    statut: c.statut || 'brouillon' }
+  const l = c.id
+    ? await requete('/campagnes_vaccination' + q({ select: '*', id: 'eq.' + c.id }), { methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps })
+    : await requete('/campagnes_vaccination', { methode: 'POST', entetes: { Prefer: 'return=representation' }, corps })
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('campagne.' + (c.id ? 'maj' : 'creation'), 'campagne', l[0].id, { nom: c.nom, statut: corps.statut })
+  return l[0]
+}
+
+/* Evenements communautaires : lecture et tri */
+export async function evenements({ statut, jours = 90 } = {}) {
+  const p = { select: '*', order: 'created_at.desc', limit: '300',
+    created_at: 'gt.' + new Date(Date.now() - jours * 864e5).toISOString() }
+  if (statut) p.statut = statut === 'ouverts' ? 'in.(nouveau,en_verification)' : 'eq.' + statut
+  const l = await requete('/evenements_communautaires' + q(p)) || []
+  return l.map((e) => ({ ...e, ville_nom: nomVille(e.ville_id), province_nom: nomProvince(e.province_id) }))
+}
+export const trierEvenement = (id, statut, note) => rpc('trier_evenement', { p_id: id, p_statut: statut, p_note: note || null })
+
+export async function veilleVaccination(jours = 90) {
+  const l = await rpc('veille_vaccination', { p_jours: Number(jours) || 90 }) || []
+  return l.map((r) => ({ ...r, province_nom: nomProvince(r.province_id) }))
+}
+
+/* Referentiel sanitaire : import par lots depuis src/data/sante.json */
+export async function importerFormations(lignes, surProgres) {
+  let total = 0
+  for (let i = 0; i < lignes.length; i += 500) {
+    total += (await rpc('importer_formations', { p_lot: lignes.slice(i, i + 500) })) || 0
+    surProgres?.(Math.min(i + 500, lignes.length), lignes.length)
+  }
+  journaliser('formations.import', 'referentiel', 'msp2020', { lignes: total })
+  return total
+}
+export async function compterFormations() {
+  const r = await fetch(`${REST}/formations_sanitaires?select=code_msp`, {
+    headers: { apikey: APIKEY, Authorization: `Bearer ${(await jetonValide())?.access_token || APIKEY}`, Prefer: 'count=exact', 'Range-Unit': 'items', Range: '0-0' },
+  })
+  const cr = r.headers.get('content-range') || ''
+  return Number(cr.split('/')[1]) || 0
 }

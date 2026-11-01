@@ -1,5 +1,3 @@
-import plugin from 'tailwindcss/plugin'
-
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
@@ -54,11 +52,5 @@ export default {
       minHeight: { touch: '3.5rem' },
     },
   },
-  plugins: [
-    plugin(({ addVariant }) => {
-      addVariant('rtl', '[dir="rtl"] &')
-      addVariant('ltr', '[dir="ltr"] &')
-      addVariant('lite', '[data-lite="1"] &')
-    }),
-  ],
+  plugins: [],
 }

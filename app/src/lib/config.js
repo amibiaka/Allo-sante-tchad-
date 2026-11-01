@@ -50,14 +50,14 @@ export const CONFIG_INVALIDE = MODE_DEMO && Boolean(
 
 if (CONFIG_INVALIDE && typeof console !== 'undefined') {
   console.warn(
-    '[Allo Sante] Variables Supabase presentes mais invalides — retour en mode demonstration.'
+    '[Afiya] Variables Supabase presentes mais invalides — retour en mode demonstration.'
     + (URL_SUPABASE ? '' : ' VITE_SUPABASE_URL attendu : https://<ref>.supabase.co')
     + (CLE_SUPABASE ? '' : ' VITE_SUPABASE_ANON_KEY attendu : eyJ... ou sb_publishable_...')
   )
 }
 
 export const CONFIG = {
-  nomApp: env.VITE_APP_NAME || 'Allo Santé Tchad',
+  nomApp: env.VITE_APP_NAME || 'Afiya',
   supabaseUrl: URL_SUPABASE,
   supabaseKey: CLE_SUPABASE,
   whatsappPlateforme: nettoieTel(env.VITE_PLATFORM_WHATSAPP),
@@ -67,6 +67,9 @@ export const CONFIG = {
   cleAdmin: String(env.VITE_ADMIN_GATE_CODE || '').trim(),
   otpActive: env.VITE_ENABLE_PHONE_OTP === 'true',
   transparenceActive: env.VITE_ENABLE_TRANSPARENCY !== 'false',
+  /* Domaine fictif des comptes ouverts par numero de telephone avant la
+     confirmation par courriel. Il porte encore l'ancien nom et doit le
+     garder : le changer deconnecterait les comptes existants. */
   domaineTel: 'tel.allosante.td',
 
   /* Inscription sans mot de passe : le soignant entre son numero, c'est

@@ -557,12 +557,19 @@ function FicheProfil({ profil, geo, surAction }) {
   const [provinceCode, setProvinceCode] = useState('')
   const [actif, setActif] = useState(profil.actif !== false)
 
+  /* Le role passe par attribuer_role() (journalise, ouvert au centre
+     numerique) ; l'activation du compte reste une simple mise a jour. */
   const enregistrer = async () => {
-    const patch = { role, actif }
-    if (role === 'admin_ville' && villeCode) patch.villeCode = villeCode
-    if (role === 'admin_province' && provinceCode) patch.provinceCode = provinceCode
-    if (role === 'super_admin') { patch.villeCode = null; patch.provinceCode = null }
-    await lancer(db.adminMajProfil(profil.id, patch), surAction)
+    const travail = async () => {
+      if (role !== profil.role || villeCode || provinceCode) {
+        await db.attribuerRole(profil.id, role, {
+          villeCode: role === 'admin_ville' ? villeCode || null : null,
+          provinceCode: ['admin_province', 'autorite_provinciale'].includes(role) ? provinceCode || null : null,
+        })
+      }
+      if (actif !== (profil.actif !== false)) await db.adminMajProfil(profil.id, { actif })
+    }
+    await lancer(travail(), surAction)
   }
 
   return (
@@ -574,7 +581,13 @@ function FicheProfil({ profil, geo, surAction }) {
           { valeur: 'admin_ville', libelle: t('admin.role.admin_ville') },
           { valeur: 'admin_province', libelle: t('admin.role.admin_province') },
           { valeur: 'super_admin', libelle: t('admin.role.super_admin') },
+          { valeur: 'autorite_nationale', libelle: t('admin.role.autorite_nationale') },
+          { valeur: 'autorite_provinciale', libelle: t('admin.role.autorite_provinciale') },
+          { valeur: 'ordre_medecins', libelle: t('admin.role.ordre_medecins') },
+          { valeur: 'ordre_pharmaciens', libelle: t('admin.role.ordre_pharmaciens') },
+          { valeur: 'centre_numerique', libelle: t('admin.role.centre_numerique') },
         ]} />
+        <p className="aide mt-1">{t('admin.roleAide.' + role)}</p>
       </Champ>
 
       {role === 'admin_ville' && (
@@ -583,7 +596,7 @@ function FicheProfil({ profil, geo, surAction }) {
                      options={geo.villes.map((v) => ({ valeur: v.code, libelle: `${nom(v)} — ${nom(v.province)}` }))} />
         </Champ>
       )}
-      {role === 'admin_province' && (
+      {['admin_province', 'autorite_provinciale'].includes(role) && (
         <Champ etiquette={t('zone.province')}>
           <Selecteur valeur={provinceCode} onChange={setProvinceCode} placeholder={t('zone.choisirProvince')}
                      options={geo.provinces.map((p) => ({ valeur: p.code, libelle: nom(p) }))} />

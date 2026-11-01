@@ -915,3 +915,179 @@ export async function veilleFraicheur() {
   const l = await adminDemandes({ jours: 3650 })
   return l.length ? l[0].created_at : null
 }
+
+/* =====================================================================
+ * PROGRAMMES ET INSTITUTIONS, version demonstration.
+ * Memes noms et memes formes de reponse que le backend reel, en memoire
+ * (sauvees avec le reste de la demonstration). Rien n'est invente : les
+ * listes partent vides et se remplissent avec ce que la demonstration
+ * produit.
+ * ===================================================================== */
+function coffre(nom) {
+  const db = charger()
+  if (!db[nom]) db[nom] = []
+  return db[nom]
+}
+const provinceLocale = (code) => REF.provinces.find((p) => p.code === code) || null
+const nomProvinceLocale = (id) => REF.provinces.find((p) => p.id === id)?.nom_fr || null
+const nomVilleLocale = (id) => REF.villes.find((v) => v.id === id)?.nom_fr || null
+
+export async function publications({ type, limite = 20 } = {}) {
+  const types = type ? (Array.isArray(type) ? type : [type]) : null
+  return coffre('publications').filter((p) => p.publie && p.audience === 'public' && (!types || types.includes(p.type)))
+    .sort((a, b) => (b.publie_le || '').localeCompare(a.publie_le || '')).slice(0, limite)
+    .map((p) => ({ ...p, province_nom: nomProvinceLocale(p.province_id) }))
+}
+export async function campagnesActives({ provinceCode } = {}) {
+  const prov = provinceCode ? provinceLocale(provinceCode) : null
+  const auj = maintenant().slice(0, 10)
+  return coffre('campagnes').filter((c) => c.statut === 'publiee' && c.fin >= auj && (!prov || !c.province_id || c.province_id === prov.id))
+    .map((c) => ({ ...c, province_nom: nomProvinceLocale(c.province_id) }))
+}
+export async function declarerVaccin({ villeCode, vaccin, dose, ageMois, aLHeure }) {
+  const v = villeParCode(villeCode); if (!v) return false
+  coffre('declarations').push({ ville_id: v.id, province_id: v.province_id, vaccin, dose, age_mois: ageMois, a_l_heure: !!aLHeure, created_at: maintenant() })
+  sauver(); return true
+}
+export async function signalerEvenement(p) {
+  const v = villeParCode(p.ville_code); if (!v) throw new Error('ville inconnue')
+  const code = 'A-' + Math.random().toString(36).slice(2, 6).toUpperCase()
+  coffre('evenements').push({ id: uid(), code, type: p.type, nb_personnes: Number(p.nb_personnes) || null, ville_id: v.id,
+    province_id: v.province_id, quartier_id: p.quartier_id || null, lieu_texte: p.lieu_texte || null, description: p.description,
+    contact_tel: p.contact_tel || null, debut_estime: p.debut_estime || null, statut: 'nouveau', note_autorite: null, demo: true, created_at: maintenant() })
+  sauver(); return code
+}
+
+/* Entraide */
+const habillerCasLocal = (c) => {
+  const a = charger().pros.find((p) => p.id === c.auteur_pro)
+  return { ...c, auteur_nom: a?.nom ?? null, auteur_type: a?.type ?? null, ville_nom: nomVilleLocale(c.ville_id), province_nom: nomProvinceLocale(c.province_id) }
+}
+export async function casEntraide({ statut, miens = false, limite = 50 } = {}) {
+  const s = await sessionCourante()
+  let l = coffre('cas')
+  if (statut === 'actifs') l = l.filter((c) => c.statut !== 'clos'); else if (statut) l = l.filter((c) => c.statut === statut)
+  if (miens) l = l.filter((c) => c.auteur_pro === s?.pro?.id)
+  return l.sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, limite).map(habillerCasLocal)
+}
+export async function creerCas({ specialite, urgence, titre, description, whatsappOk }) {
+  const s = await sessionCourante(); if (!s?.pro) throw new Error('PAS_DE_FICHE')
+  if (/\d{6,}/.test(titre) || /\d{8,}/.test(description)) throw new Error('IDENTIFIANT_INTERDIT')
+  const c = { id: uid(), code: 'E-' + Math.random().toString(36).slice(2, 6).toUpperCase(), auteur_pro: s.pro.id, ville_id: s.pro.ville_id,
+    province_id: s.pro.province_id, specialite: specialite || null, urgence: Number(urgence) || 2, titre, description,
+    whatsapp_ok: !!whatsappOk, statut: 'ouvert', nb_reponses: 0, created_at: maintenant(), updated_at: maintenant() }
+  coffre('cas').push(c); sauver(); return habillerCasLocal(c)
+}
+export async function reponsesCas(casId) {
+  return coffre('reponsesCas').filter((r) => r.cas_id === casId).map((r) => {
+    const a = charger().pros.find((p) => p.id === r.auteur_pro)
+    return { ...r, auteur_nom: a?.nom ?? null, auteur_type: a?.type ?? null }
+  })
+}
+export async function repondreCas({ casId, texte }) {
+  const s = await sessionCourante(); if (!s?.pro) throw new Error('PAS_DE_FICHE')
+  const c = coffre('cas').find((x) => x.id === casId); if (!c) throw new Error('introuvable')
+  if (s.pro.type !== 'medecin' && c.auteur_pro !== s.pro.id) throw new Error('HORS_PERIMETRE')
+  if (/\d{8,}/.test(texte)) throw new Error('IDENTIFIANT_INTERDIT')
+  const r = { id: uid(), cas_id: casId, auteur_pro: s.pro.id, texte, created_at: maintenant() }
+  coffre('reponsesCas').push(r); c.nb_reponses++; c.updated_at = maintenant()
+  if (c.statut === 'ouvert' && c.auteur_pro !== s.pro.id) c.statut = 'repondu'
+  sauver(); return r
+}
+export async function cloreCas(casId) {
+  const s = await sessionCourante(); const c = coffre('cas').find((x) => x.id === casId)
+  if (!c || (c.auteur_pro !== s?.pro?.id && s?.profil?.role === 'pro')) throw new Error('HORS_PERIMETRE')
+  c.statut = 'clos'; c.clos_le = maintenant(); c.updated_at = maintenant(); sauver(); return true
+}
+export async function contactCas(casId) {
+  const s = await sessionCourante(); const c = coffre('cas').find((x) => x.id === casId)
+  if (!c?.whatsapp_ok || s?.pro?.type !== 'medecin') return null
+  const a = charger().pros.find((p) => p.id === c.auteur_pro); return a?.whatsapp || a?.telephone || null
+}
+
+/* Gouvernance */
+function peutValiderLocal(profil, pro) {
+  if (!profil) return false
+  const r = profil.role
+  if (['super_admin', 'admin_province', 'admin_ville'].includes(r)) return dansPerimetre(perimetre({ profil }), pro)
+  if (r === 'ordre_medecins') return pro.type === 'medecin'
+  if (r === 'ordre_pharmaciens') return pro.type === 'pharmacie'
+  if (r === 'autorite_nationale') return ['infirmier', 'sage_femme', 'centre_sante'].includes(pro.type)
+  if (r === 'autorite_provinciale') return ['infirmier', 'sage_femme', 'centre_sante'].includes(pro.type) && pro.province_id === profil.province_id
+  return false
+}
+export async function institutionStats() {
+  const s = await sessionCourante(); const db = charger(); const auj = maintenant().slice(0, 10)
+  return {
+    a_valider: db.pros.filter((p) => p.statut === 'provisoire' && peutValiderLocal(s?.profil, p)).length,
+    evenements_nouveaux: coffre('evenements').filter((e) => e.statut === 'nouveau').length,
+    campagnes_actives: coffre('campagnes').filter((c) => c.statut === 'publiee' && c.fin >= auj).length,
+    publications: coffre('publications').filter((p) => p.publie).length,
+    cas_ouverts: coffre('cas').filter((c) => c.statut === 'ouvert').length,
+    doses_declarees_30j: coffre('declarations').length,
+  }
+}
+export async function prosAValider(statut = 'provisoire') {
+  const s = await sessionCourante()
+  return charger().pros.filter((p) => p.statut === statut && peutValiderLocal(s?.profil, p)).map(habiller)
+}
+export async function validerPro(id, decision, note) {
+  const s = await sessionCourante(); const p = charger().pros.find((x) => x.id === id); if (!p) return false
+  if (!peutValiderLocal(s?.profil, p)) throw new Error('HORS_PERIMETRE')
+  if (decision === 'prolonge') { p.statut = 'provisoire'; p.probation_fin = new Date(Date.now() + 45 * 864e5).toISOString() }
+  else { p.statut = decision; p.verifie_le = maintenant(); p.verifie_par = s.profil.id }
+  if (note) p.note_admin = note
+  charger().journal.push({ id: uid(), admin_id: s.profil.id, action: 'validation:' + decision, cible_type: 'professionnel', cible_id: id, detail: { nom: p.nom }, created_at: maintenant() })
+  sauver(); return true
+}
+export async function attribuerRole(profilId, role, { provinceCode, villeCode } = {}) {
+  const s = await sessionCourante()
+  if (!['super_admin', 'centre_numerique'].includes(s?.profil?.role)) throw new Error('HORS_PERIMETRE')
+  if (profilId === s.profil.id) throw new Error('on ne change pas son propre role')
+  const c = charger().comptes.find((x) => x.id === profilId); if (!c) return false
+  c.role = role
+  c.province_id = ['admin_province', 'autorite_provinciale'].includes(role) ? (provinceLocale(provinceCode)?.id ?? null) : null
+  c.ville_id = role === 'admin_ville' ? (villeParCode(villeCode)?.id ?? null) : null
+  sauver(); return true
+}
+export async function adminPublications() { return coffre('publications').map((p) => ({ ...p, province_nom: nomProvinceLocale(p.province_id) })) }
+export async function enregistrerPublication(p) {
+  const s = await sessionCourante(); const l = coffre('publications')
+  const prov = p.provinceCode ? provinceLocale(p.provinceCode) : null
+  let x = p.id ? l.find((y) => y.id === p.id) : null
+  if (!x) { x = { id: uid(), created_at: maintenant(), auteur_id: s?.profil?.id, auteur_role: s?.profil?.role }; l.push(x) }
+  Object.assign(x, { type: p.type, audience: p.audience, titre: p.titre, corps: p.corps, lien: p.lien || null, province_id: prov?.id ?? null,
+    publie: !!p.publie, expire_le: p.expire_le || null, updated_at: maintenant(), publie_le: p.publie ? (x.publie_le || maintenant()) : x.publie_le })
+  sauver(); return x
+}
+export async function supprimerPublication(id) { const db = charger(); db.publications = coffre('publications').filter((p) => p.id !== id); sauver(); return true }
+export async function adminCampagnes() { return coffre('campagnes').map((c) => ({ ...c, province_nom: nomProvinceLocale(c.province_id) })) }
+export async function enregistrerCampagne(c) {
+  const l = coffre('campagnes'); const prov = c.provinceCode ? provinceLocale(c.provinceCode) : null
+  let x = c.id ? l.find((y) => y.id === c.id) : null
+  if (!x) { x = { id: uid(), created_at: maintenant() }; l.push(x) }
+  Object.assign(x, { nom: c.nom, vaccins: c.vaccins || [], age_min_mois: Number(c.age_min_mois) || 0, age_max_mois: Number(c.age_max_mois) || 59,
+    province_id: prov?.id ?? null, district_ids: c.district_ids || [], debut: c.debut, fin: c.fin, lieux: c.lieux || null, message: c.message || null,
+    statut: c.statut || 'brouillon', updated_at: maintenant() })
+  sauver(); return x
+}
+export async function evenements({ statut } = {}) {
+  let l = coffre('evenements')
+  if (statut === 'ouverts') l = l.filter((e) => ['nouveau', 'en_verification'].includes(e.statut)); else if (statut) l = l.filter((e) => e.statut === statut)
+  return l.map((e) => ({ ...e, ville_nom: nomVilleLocale(e.ville_id), province_nom: nomProvinceLocale(e.province_id) }))
+}
+export async function trierEvenement(id, statut, note) {
+  const e = coffre('evenements').find((x) => x.id === id); if (!e) return false
+  e.statut = statut; if (note) e.note_autorite = note; e.traite_le = maintenant(); sauver(); return true
+}
+export async function veilleVaccination() {
+  const g = new Map()
+  for (const d of coffre('declarations')) {
+    const k = [d.province_id, d.vaccin, d.dose].join('|')
+    const e = g.get(k) || { semaine: d.created_at.slice(0, 10), province_id: d.province_id, vaccin: d.vaccin, dose: d.dose, nombre: 0, aLHeure: 0 }
+    e.nombre++; e.aLHeure += d.a_l_heure ? 1 : 0; g.set(k, e)
+  }
+  return [...g.values()].map((e) => ({ ...e, part_a_l_heure: e.nombre ? Math.round((e.aLHeure / e.nombre) * 100) / 100 : null, province_nom: nomProvinceLocale(e.province_id) }))
+}
+export async function importerFormations(lignes, surProgres) { surProgres?.(lignes.length, lignes.length); return lignes.length }
+export async function compterFormations() { return 0 }

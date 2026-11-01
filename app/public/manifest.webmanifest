@@ -1,7 +1,7 @@
 {
-  "name": "Allo Santé Tchad — ألو صحة تشاد",
-  "short_name": "Allo Santé",
-  "description": "Trouver et contacter un soignant, une pharmacie ou un centre de santé proche, partout au Tchad. Gratuit, sans inscription.",
+  "name": "Afiya Tchad — عافية",
+  "short_name": "Afiya",
+  "description": "Afiya : urgences, soignants proches, pharmacies, vaccination et centres de santé, partout au Tchad. Gratuit, sans inscription.",
   "lang": "fr",
   "dir": "auto",
   "start_url": "./",

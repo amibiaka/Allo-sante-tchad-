@@ -1,4 +1,4 @@
-/* Allo Sante Tchad, invitation d installation.
+/* Afiya, invitation d installation.
 
    Chrome declenche beforeinstallprompt des que le manifeste et le service
    worker sont juges valides. Sur un telephone lent cela arrive parfois

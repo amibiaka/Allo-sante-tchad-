@@ -12,6 +12,7 @@ import { Bouton, Entete, Alerte, Chargement, Vide, Bascule, Modale, Champ, Selec
 import { BadgePro } from '../../components/pro'
 import { BoutonSortie } from '../../components/chrome'
 import { SelecteurZone } from '../../components/zone'
+import Entraide from './Entraide'
 
 export default function TableauPro({ session, surChangement }) {
   const { t } = useLangue()
@@ -70,10 +71,13 @@ export default function TableauPro({ session, surChangement }) {
         />
       </div>
 
+      <BandeauDirectives />
+
       <div className="mb-4 flex gap-2">
         {[
           ['demandes', '🆘 ' + t('pro.demandes')],
           ...(pro.type === 'pharmacie' ? [['ordonnances', '💊 ' + t('pro.ordonnances')]] : []),
+          ['entraide', '🤝 ' + t('pro.entraide')],
           ['profil', '👤 ' + t('pro.profil')],
         ].map(([v, l]) => (
           <button key={v} onClick={() => setOnglet(v)} aria-pressed={onglet === v}
@@ -86,7 +90,38 @@ export default function TableauPro({ session, surChangement }) {
 
       {onglet === 'demandes' && <ListeDemandes pro={pro} bloque={bloque} />}
       {onglet === 'ordonnances' && <ListeOrdonnances pro={pro} bloque={bloque} />}
+      {onglet === 'entraide' && <Entraide pro={pro} bloque={bloque} />}
       {onglet === 'profil' && <ProfilPro pro={pro} surChangement={surChangement} />}
+    </div>
+  )
+}
+
+/* Directives et alertes publiees par les autorites ou les ordres, a
+   destination des soignants : la plus recente, repliee, un geste pour
+   lire les autres. Rien si rien n'a ete publie. */
+function BandeauDirectives() {
+  const { t, langue } = useLangue()
+  const [liste, setListe] = useState([])
+  const [ouvert, setOuvert] = useState(false)
+  useEffect(() => {
+    db.publications({ type: ['directive', 'alerte', 'actualite', 'vaccination'], limite: 5 })
+      .then((l) => setListe(l.filter((p) => p.audience !== 'public' || p.type === 'alerte'))).catch(() => {})
+  }, [])
+  if (!liste.length) return null
+  const visibles = ouvert ? liste : liste.slice(0, 1)
+  return (
+    <div className="mb-4 rounded-xl border-2 border-nil-200 bg-nil-50 p-3">
+      <p className="text-[12px] font-bold uppercase tracking-wide text-nil-700/70">📢 {t('pro.directives')}</p>
+      <ul className="mt-1 space-y-2">
+        {visibles.map((p) => (
+          <li key={p.id}>
+            <p className="font-bold leading-tight">{p.type === 'alerte' ? '⚠️ ' : ''}{p.titre}</p>
+            {ouvert && <p className="mt-1 whitespace-pre-line text-[13px] text-nil-900/80">{p.corps}</p>}
+            <p className="aide">{[p.auteur_role ? t('admin.role.' + p.auteur_role) : null, p.province_nom, p.publie_le ? ilYA(p.publie_le, langue) : null].filter(Boolean).join(' · ')}</p>
+          </li>
+        ))}
+      </ul>
+      <button className="lien mt-1 text-[13px]" onClick={() => setOuvert((o) => !o)}>{ouvert ? t('commun.voirMoins') : t('commun.voirPlus')}</button>
     </div>
   )
 }

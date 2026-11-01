@@ -18,13 +18,14 @@ export default defineConfig(({ mode }) => {
     // ~45 Ko a ~5 Ko une fois compresse : sur un forfait 2G, c'est
     // plusieurs secondes gagnees a la premiere visite.
     // Pour l'activer : `npm i preact` puis decommentez ces 6 lignes.
-    // resolve: {
-    //   alias: {
-    //     react: 'preact/compat',
-    //     'react-dom': 'preact/compat',
-    //     'react/jsx-runtime': 'preact/jsx-runtime',
-    //   },
-    // },
+    resolve: {
+      alias: {
+        'react-dom/client': 'preact/compat/client',
+        'react-dom': 'preact/compat',
+        'react/jsx-runtime': 'preact/jsx-runtime',
+        react: 'preact/compat',
+      },
+    },
 
     build: {
       outDir: fichierUnique ? 'dist-demo-tmp' : 'dist',

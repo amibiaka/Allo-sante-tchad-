@@ -1,5 +1,5 @@
 /* =====================================================================
- * Allo Sante Tchad - filet de secours
+ * Afiya - filet de secours
  * Si l'application ne demarre pas, cette page se repare toute seule :
  * elle vide les caches, retire le service worker et recharge une fois.
  * Cas vise : un ancien index.html dort dans le cache et reclame des
@@ -32,7 +32,7 @@
     if (!socle) return
     socle.innerHTML =
       '<div class="logo">+</div>' +
-      '<p>Allo Santé Tchad</p>' +
+      '<p>Afiya</p>' +
       '<small>L’application n’a pas pu s’ouvrir. Vérifiez votre connexion, ' +
       'puis appuyez sur Réessayer.<br><span dir="rtl">تعذّر فتح التطبيق. تحقّق من اتّصالك ثمّ أعد المحاولة.</span></small>' +
       '<button id="ast-reessayer" style="margin-top:.5rem;padding:.7rem 1.4rem;border:0;border-radius:12px;' +

@@ -1,0 +1,63 @@
+{
+  "packageId": "com.afiyatchad.app",
+  "host": "afiyatchad.com",
+  "name": "Afiya Tchad",
+  "launcherName": "Afiya",
+  "display": "standalone",
+  "themeColor": "#0B4C8C",
+  "themeColorDark": "#0B4C8C",
+  "navigationColor": "#0B4C8C",
+  "navigationColorDark": "#0B4C8C",
+  "navigationDividerColor": "#0B4C8C",
+  "navigationDividerColorDark": "#0B4C8C",
+  "backgroundColor": "#F4F1EA",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://afiyatchad.com/icons/icon-512.png",
+  "maskableIconUrl": "https://afiyatchad.com/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "afiya"
+  },
+  "appVersionName": "y",
+  "appVersionCode": 3,
+  "shortcuts": [
+    {
+      "name": "J'ai besoin d'aide",
+      "shortName": "Aide",
+      "url": "/#/aide",
+      "chosenIconUrl": "https://afiyatchad.com/icons/icon-192.png"
+    },
+    {
+      "name": "Trouver un médicament",
+      "shortName": "Médicament",
+      "url": "/#/medicament",
+      "chosenIconUrl": "https://afiyatchad.com/icons/icon-192.png"
+    },
+    {
+      "name": "Soignants près de moi",
+      "shortName": "Soignants",
+      "url": "/#/annuaire",
+      "chosenIconUrl": "https://afiyatchad.com/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://afiyatchad.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://afiyatchad.com/",
+  "minSdkVersion": 24,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "displayOverride": [],
+  "appVersion": "y"
+}

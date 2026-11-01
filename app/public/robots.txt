@@ -1,4 +1,4 @@
-# Allo Santé Tchad
+# Afiya Tchad
 # Le back-office n'est jamais indexé : il vit sur un chemin privé,
 # communiqué uniquement aux personnes habilitées.
 User-agent: *

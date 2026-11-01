@@ -1,4 +1,4 @@
-/* Fabrique dist-demo/allo-sante-demo.html : l'application entiere dans
+/* Fabrique dist-demo/afiya-demo.html : l'application entiere dans
    UN SEUL fichier HTML, utilisable sans serveur et sans reseau — pour
    montrer la plateforme sur le terrain, l'envoyer par WhatsApp ou la
    copier sur une cle USB. Le mode demonstration ne sort jamais du
@@ -29,7 +29,7 @@ html = html
   .replace('</body>', `<script type="module">\n${js}\n</script>\n</body>`)
 
 mkdirSync(SORTIE, { recursive: true })
-const chemin = join(SORTIE, 'allo-sante-demo.html')
+const chemin = join(SORTIE, 'afiya-demo.html')
 writeFileSync(chemin, html)
 rmSync(TMP, { recursive: true, force: true })
 
