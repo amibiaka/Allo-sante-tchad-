@@ -1239,3 +1239,9 @@ export async function enregistrerFormation(f) {
 export async function majVilleDistrict() { return true }
 export async function exporterFichier() { throw new Error('EXPORT_INDISPONIBLE_DEMO') }
 export async function transcrireDemande() { throw new Error('VOIX_INDISPONIBLE_DEMO') }
+export async function ouvrirSessionDepuisLien() { return null }
+export async function definirMotDePasse() { return true }
+export async function comptesGestion(action) {
+  if (action === 'lister') return { comptes: charger().profils.filter((p) => p.role !== 'pro').map((p) => ({ ...p, email: p.email || null, confirme: true })) }
+  throw new Error('COMPTES_INDISPONIBLE_DEMO')
+}

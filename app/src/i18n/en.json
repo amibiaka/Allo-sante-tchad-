@@ -461,7 +461,7 @@
     "effacerDemoConfirme": "Delete every listing and request marked DEMO? This cannot be undone.",
     "reinitialiser": "Reset the demonstration",
     "reinitialiserConfirme": "Reset the demonstration on this phone?",
-    "creationCompteSupabase": "First create the user in Supabase (Authentication → Users), then give them a role here.",
+    "creationCompteSupabase": "Management accounts are created by the super administrator (Team screen); the national programme assigns roles to existing accounts.",
     "delaiEscalade": "Delay before a life-threatening case is escalated",
     "retention": "How long photos and recordings are kept",
     "probationJours": "Verification period for new health workers",
@@ -494,7 +494,9 @@
     "rattacherDemo": "Attach an account to the demonstration",
     "rattacherDemoAide": "An attached account only sees demonstration requests and is removed with them when the demonstration is deleted. Never attach a real health worker.",
     "mettreDemo": "Set as demo",
-    "sortirDemo": "Leave demo"
+    "sortirDemo": "Leave demo",
+    "identifiant": "Phone or e-mail address",
+    "identifiantAide": "8-digit number for accounts opened by phone, e-mail address for management accounts."
   },
   "veille": {
     "fraicheurTitre": "Last request received",
@@ -1156,5 +1158,59 @@
     "telechargerContacts": "Contacts (CSV)",
     "whatsappAide": "Small list: open WhatsApp contact by contact. Large list: download the contacts and create a broadcast list in WhatsApp Business.",
     "journal": "Every contact export is logged."
+  },
+  "equipe": {
+    "intro": "Create here the accounts of the national programme, the Orders and the authorities: enter the e-mail address and the role, the person receives an invitation (or a link, or a temporary password) and chooses a password. Every creation is logged.",
+    "inviter": "Create a management account",
+    "aucun": "No management account",
+    "desactive": "disabled",
+    "invitationEnAttente": "invitation pending",
+    "derniereConnexion": "signed in",
+    "email": "E-mail address",
+    "nom": "Full name",
+    "role": "Role",
+    "mode": "Access delivery",
+    "modes": {
+      "invitation": "E-mail invitation (sent by Supabase)",
+      "lien": "Access link I send myself",
+      "mot_de_passe": "Temporary password"
+    },
+    "modeAide": {
+      "invitation": "The person receives a \"You have been invited\" e-mail and chooses a password. If sending fails, you get a link instead.",
+      "lien": "A one-time link to send through your own e-mail or WhatsApp. The person chooses a password when opening it.",
+      "mot_de_passe": "A temporary password, shown once: pass it on through a safe channel; the person can change it."
+    },
+    "creerCompte": "Create the account and deliver access",
+    "journal": "The address and role are saved; the creation is logged under your name.",
+    "compteCree": "Account created for {email} with the role \"{role}\".",
+    "compteMisAJour": "Account {email}: role \"{role}\" assigned.",
+    "motDePasseProvisoire": "Temporary password (shown once)",
+    "motDePasseNote": "Pass it on through a safe channel. The person signs in with their e-mail address and this password, then can change it.",
+    "lienAcces": "Access link (one-time)",
+    "lienNote": "Send it to the person: it opens a page where they choose a password.",
+    "envoiEchoue": "The e-mail could not be sent (no project SMTP or limit reached): here is the link to send yourself.",
+    "messageLien": "Hello, here is your access to Afiya (management space). Open this link and choose your password: {lien}",
+    "invitationEnvoyee": "Invitation sent to {email}.",
+    "autreCompte": "Create another account",
+    "cleAdminRappel": "Reminder: the back office also asks for the site access key (VITE_ADMIN_GATE_CODE). Give it to the person separately.",
+    "renvoyerAcces": "Resend access",
+    "envoyer": "Send"
+  },
+  "acces": {
+    "titre": "Your Afiya access",
+    "lienInvalide": "This access link is no longer valid. Ask the administrator for a new one.",
+    "bonjour": "Hello {nom},",
+    "roleAttribue": "Your account has the role",
+    "motDePasse": "Choose a password",
+    "motDePasseAide": "At least 8 characters.",
+    "confirmer": "Confirm the password",
+    "tropCourt": "At least eight characters.",
+    "differents": "The two passwords differ.",
+    "enregistrer": "Save the password",
+    "faitTitre": "Password saved",
+    "faitTexte": "You can now sign in with your e-mail address and this password.",
+    "ouvrirGestion": "Open the management space",
+    "ouvrirPro": "Open the health-worker space",
+    "cleAdminNote": "The management space also asks for the site access key, which the administrator gives you."
   }
 }

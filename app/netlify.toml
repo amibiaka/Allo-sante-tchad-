@@ -25,6 +25,11 @@
   to = "/.netlify/functions/voix"
   status = 200
 
+[[redirects]]
+  from = "/api/comptes"
+  to = "/.netlify/functions/comptes"
+  status = 200
+
 # Application monopage : toute URL renvoie vers index.html.
 # (Le routeur interne utilise des ancres #/ donc ceci est une simple
 #  ceinture de securite.)

@@ -508,33 +508,51 @@ export function SectionNumeros() {
 }
 
 /* =================== EQUIPE ======================================== */
-export function SectionEquipe() {
+const ROLES_GESTION = ['centre_numerique', 'ordre_medecins', 'ordre_pharmaciens', 'autorite_nationale', 'autorite_provinciale', 'admin_province', 'admin_ville', 'super_admin']
+const MODES_ACCES = ['invitation', 'lien', 'mot_de_passe']
+
+export function SectionEquipe({ session }) {
   const { t, nom } = useLangue()
+  const superAdmin = session?.profil?.role === 'super_admin'
   const [liste, setListe] = useState(null)
   const [geo, setGeo] = useState(null)
   const [choisi, setChoisi] = useState(null)
+  const [inviter, setInviter] = useState(false)
 
   const charger = useCallback(() => {
-    db.adminProfils().then(setListe).catch(() => setListe([]))
-  }, [])
+    setListe(null)
+    const p = superAdmin
+      ? db.comptesGestion('lister').then((r) => (r?.comptes || []).map((c) => ({ ...c, ville_nom: c.ville_nom, province_nom: c.province_nom })))
+      : db.adminProfils()
+    p.then(setListe).catch(() => db.adminProfils().then(setListe).catch(() => setListe([])))
+  }, [superAdmin])
   useEffect(() => { charger(); chargerGeo().then(setGeo) }, [charger])
+
+  const nomGeo = (p) => {
+    if (p.ville_nom || p.province_nom) return p.ville_nom || p.province_nom
+    if (!geo) return null
+    if (p.ville_id) { const v = geo.villes.find((x) => x.id === p.ville_id); if (v) return nom(v) }
+    if (p.province_id) { const pr = geo.provinces.find((x) => x.id === p.province_id); if (pr) return nom(pr) }
+    return null
+  }
 
   return (
     <div>
-      <div className="mb-4"><Alerte ton="info">{t('admin.creationCompteSupabase')}</Alerte></div>
-      {liste === null || !geo ? <Chargement /> : (
+      <div className="mb-3"><Alerte ton="info">{t(superAdmin ? 'equipe.intro' : 'admin.creationCompteSupabase')}</Alerte></div>
+      {superAdmin && <Bouton className="mb-3 w-full" onClick={() => setInviter(true)}>➕ {t('equipe.inviter')}</Bouton>}
+      {liste === null || !geo ? <Chargement /> : liste.length === 0 ? <Vide emoji="👥" titre={t('equipe.aucun')} /> : (
         <ul className="space-y-2">
           {liste.map((p) => (
             <li key={p.id}>
               <button onClick={() => setChoisi(p)} className="carte block w-full p-3 text-start">
-                <p className="font-bold">{p.nom || '—'}</p>
-                <p className="aide nombres-latins" dir="ltr">{p.telephone}</p>
+                <p className="font-bold">{p.nom || p.email || '—'}</p>
+                <p className="aide nombres-latins" dir="ltr">{[p.email, p.telephone].filter(Boolean).join(' · ')}</p>
                 <p className="mt-1 flex flex-wrap gap-1">
                   <span className="puce bg-nil-50 text-nil-700">{t('admin.role.' + p.role)}</span>
-                  {(p.ville_nom || p.province_nom) && (
-                    <span className="puce bg-sable-100 text-nil-900/60">{p.ville_nom || p.province_nom}</span>
-                  )}
-                  {!p.actif && <span className="puce bg-urgence-50 text-urgence-600">✕</span>}
+                  {nomGeo(p) && <span className="puce bg-sable-100 text-nil-900/60">{nomGeo(p)}</span>}
+                  {p.actif === false && <span className="puce bg-urgence-50 text-urgence-600">{t('equipe.desactive')}</span>}
+                  {superAdmin && p.confirme === false && <span className="puce bg-soleil-100 text-soleil-700">{t('equipe.invitationEnAttente')}</span>}
+                  {superAdmin && p.derniere_connexion && <span className="puce bg-sable-100 text-nil-900/60">{t('equipe.derniereConnexion')} {ilYA(p.derniere_connexion)}</span>}
                 </p>
               </button>
             </li>
@@ -542,9 +560,133 @@ export function SectionEquipe() {
         </ul>
       )}
 
-      <Modale ouverte={!!choisi} onFermer={() => setChoisi(null)} titre={choisi?.nom || choisi?.telephone}>
-        {choisi && geo && <FicheProfil profil={choisi} geo={geo} surAction={() => { setChoisi(null); charger() }} />}
+      <Modale ouverte={!!choisi} onFermer={() => setChoisi(null)} titre={choisi?.nom || choisi?.email || choisi?.telephone}>
+        {choisi && geo && (
+          <div>
+            <FicheProfil profil={choisi} geo={geo} surAction={() => { setChoisi(null); charger() }} />
+            {superAdmin && choisi.email && choisi.id !== session.profil.id && <AccesCompte profil={choisi} t={t} />}
+          </div>
+        )}
       </Modale>
+      <Modale ouverte={inviter} onFermer={() => setInviter(false)} titre={t('equipe.inviter')}>
+        {inviter && geo && <FormInvitation geo={geo} nom={nom} t={t} surFait={() => charger()} />}
+      </Modale>
+    </div>
+  )
+}
+
+/* Resultat d'une creation ou d'une reinitialisation : ce que le
+   super-administrateur doit transmettre (ou rien, si l'e-mail est parti). */
+function Livraison({ r, t }) {
+  const [copie, setCopie] = useState(false)
+  const copier = async (texte) => { try { await navigator.clipboard.writeText(texte); setCopie(true); setTimeout(() => setCopie(false), 1500) } catch { /* refuse */ } }
+  if (!r) return null
+  if (r.mot_de_passe) {
+    return (
+      <div className="mt-3 rounded-xl border-2 border-soleil-300 bg-soleil-100 p-3">
+        <p className="text-[13px] font-bold text-soleil-700">{t('equipe.motDePasseProvisoire')}</p>
+        <p className="my-1 select-all text-lg font-black nombres-latins" dir="ltr">{r.mot_de_passe}</p>
+        <p className="aide">{t('equipe.motDePasseNote')}</p>
+        <Bouton taille="petit" variante="secondaire" className="mt-2" onClick={() => copier(r.mot_de_passe)}>{copie ? t('commun.copie') : t('commun.copier')}</Bouton>
+      </div>
+    )
+  }
+  if (r.lien) {
+    return (
+      <div className="mt-3 rounded-xl border-2 border-nil-200 bg-nil-50 p-3">
+        <p className="text-[13px] font-bold text-nil-700">{t('equipe.lienAcces')}</p>
+        {r.envoi_echoue && <p className="aide">{t('equipe.envoiEchoue')}</p>}
+        <p className="my-1 break-all text-[12px] nombres-latins" dir="ltr">{r.lien}</p>
+        <p className="aide">{t('equipe.lienNote')}</p>
+        <div className="mt-2 flex gap-2">
+          <Bouton taille="petit" variante="secondaire" onClick={() => copier(r.lien)}>{copie ? t('commun.copie') : t('commun.copier')}</Bouton>
+          <a className="rounded-full bg-[#25D366] px-3 py-1.5 text-[12px] font-bold text-white" target="_blank" rel="noopener noreferrer"
+             href={'https://wa.me/?text=' + encodeURIComponent(t('equipe.messageLien', { lien: r.lien }))}>💬 WhatsApp</a>
+        </div>
+      </div>
+    )
+  }
+  if (r.envoye) return <div className="mt-3"><Alerte ton="succes">{t('equipe.invitationEnvoyee', { email: r.email || '' })}</Alerte></div>
+  return null
+}
+
+function FormInvitation({ geo, nom, t, surFait }) {
+  const [f, setF] = useState({ email: '', nom: '', role: 'centre_numerique', provinceCode: '', villeCode: '', mode: 'invitation' })
+  const [erreur, setErreur] = useState(null)
+  const [enCours, setEnCours] = useState(false)
+  const [resultat, setResultat] = useState(null)
+  const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim()) && f.role
+    && (!['admin_province', 'autorite_provinciale'].includes(f.role) || f.provinceCode) && (f.role !== 'admin_ville' || f.villeCode)
+  const envoyer = async () => {
+    setErreur(null); setEnCours(true)
+    try {
+      const r = await db.comptesGestion('inviter', { email: f.email.trim(), nom: f.nom.trim(), role: f.role, mode: f.mode,
+        provinceCode: ['admin_province', 'autorite_provinciale'].includes(f.role) ? f.provinceCode : '', villeCode: f.role === 'admin_ville' ? f.villeCode : '' })
+      setResultat({ ...r, email: f.email.trim() }); surFait?.()
+    } catch (e) {
+      setErreur(/HORS_PERIMETRE|SESSION_REQUISE/.test(e?.message) ? t('admin.horsPerimetre') : /COMPTES_INDISPONIBLE/.test(e?.message) ? t('stats.exportIndisponible') : (e?.message || t('commun.erreurReseau')))
+    } finally { setEnCours(false) }
+  }
+  if (resultat) {
+    return (
+      <div>
+        <Alerte ton="succes">{t(resultat.nouveau ? 'equipe.compteCree' : 'equipe.compteMisAJour', { email: resultat.email, role: t('admin.role.' + f.role) })}</Alerte>
+        <Livraison r={resultat} t={t} />
+        <p className="aide mt-3">{t('equipe.cleAdminRappel')}</p>
+        <Bouton className="mt-3 w-full" variante="secondaire" onClick={() => { setResultat(null); setF({ ...f, email: '', nom: '' }) }}>{t('equipe.autreCompte')}</Bouton>
+      </div>
+    )
+  }
+  return (
+    <div>
+      <Champ etiquette={t('equipe.email')} obligatoire><input className="champ" type="email" inputMode="email" autoComplete="off" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="prenom.nom@exemple.td" /></Champ>
+      <Champ etiquette={t('equipe.nom')}><input className="champ" value={f.nom} onChange={(e) => setF({ ...f, nom: e.target.value })} maxLength={120} /></Champ>
+      <Champ etiquette={t('equipe.role')}>
+        <Selecteur valeur={f.role} onChange={(v) => setF({ ...f, role: v })} options={ROLES_GESTION.map((r) => ({ valeur: r, libelle: t('admin.role.' + r) }))} />
+        <p className="aide mt-1">{t('admin.roleAide.' + f.role)}</p>
+      </Champ>
+      {['admin_province', 'autorite_provinciale'].includes(f.role) && (
+        <Champ etiquette={t('zone.province')} obligatoire>
+          <Selecteur valeur={f.provinceCode} onChange={(v) => setF({ ...f, provinceCode: v })} placeholder={t('zone.choisirProvince')} options={geo.provinces.map((p) => ({ valeur: p.code, libelle: nom(p) }))} />
+        </Champ>
+      )}
+      {f.role === 'admin_ville' && (
+        <Champ etiquette={t('zone.ville')} obligatoire>
+          <Selecteur valeur={f.villeCode} onChange={(v) => setF({ ...f, villeCode: v })} placeholder={t('zone.choisirVille')} options={geo.villes.map((v) => ({ valeur: v.code, libelle: `${nom(v)} — ${nom(v.province)}` }))} />
+        </Champ>
+      )}
+      <Champ etiquette={t('equipe.mode')} aide={t('equipe.modeAide.' + f.mode)}>
+        <Selecteur valeur={f.mode} onChange={(v) => setF({ ...f, mode: v })} options={MODES_ACCES.map((m) => ({ valeur: m, libelle: t('equipe.modes.' + m) }))} />
+      </Champ>
+      {erreur && <div className="mb-3"><Alerte ton="danger">{erreur}</Alerte></div>}
+      <Bouton className="w-full" onClick={envoyer} disabled={!ok} enCours={enCours}>{t('equipe.creerCompte')}</Bouton>
+      <p className="aide mt-2">{t('equipe.journal')}</p>
+    </div>
+  )
+}
+
+/* Pour un compte existant : renvoyer un acces. */
+function AccesCompte({ profil, t }) {
+  const [mode, setMode] = useState('invitation')
+  const [resultat, setResultat] = useState(null)
+  const [erreur, setErreur] = useState(null)
+  const [enCours, setEnCours] = useState(false)
+  const lancer = async () => {
+    setErreur(null); setEnCours(true); setResultat(null)
+    try { setResultat(await db.comptesGestion('reinitialiser', { profil_id: profil.id, mode })) }
+    catch (e) { setErreur(e?.message || t('commun.erreurReseau')) }
+    finally { setEnCours(false) }
+  }
+  return (
+    <div className="mt-4 border-t border-sable-200 pt-3">
+      <p className="mb-1 text-[13px] font-bold">{t('equipe.renvoyerAcces')}</p>
+      <p className="aide mb-2 nombres-latins" dir="ltr">{profil.email}</p>
+      <div className="flex gap-2">
+        <div className="grow"><Selecteur valeur={mode} onChange={setMode} options={MODES_ACCES.map((m) => ({ valeur: m, libelle: t('equipe.modes.' + m) }))} /></div>
+        <Bouton variante="secondaire" onClick={lancer} enCours={enCours}>{t('equipe.envoyer')}</Bouton>
+      </div>
+      {erreur && <div className="mt-2"><Alerte ton="danger">{erreur}</Alerte></div>}
+      <Livraison r={resultat} t={t} />
     </div>
   )
 }

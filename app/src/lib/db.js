@@ -61,6 +61,7 @@ const NOMS = [
   'statsResume', 'statsRequete', 'activiteProfessionnels', 'contactsDiffusion', 'basculerDemo', 'signalementsPro',
   'adminDistricts', 'enregistrerDistrict', 'adminFormations', 'enregistrerFormation', 'majVilleDistrict',
   'exporterFichier', 'transcrireDemande',
+  'ouvrirSessionDepuisLien', 'definirMotDePasse', 'comptesGestion',
 ]
 
 export const db = Object.fromEntries(NOMS.map((n) => [n, appel(n)]))

@@ -461,7 +461,7 @@
     "effacerDemoConfirme": "Supprimer toutes les fiches et demandes marquées DÉMO ? Cette action est définitive.",
     "reinitialiser": "Réinitialiser la démonstration",
     "reinitialiserConfirme": "Remettre la démonstration à zéro sur ce téléphone ?",
-    "creationCompteSupabase": "Créez d'abord l'utilisateur dans Supabase (Authentication → Users), puis attribuez-lui un rôle ici.",
+    "creationCompteSupabase": "Les comptes de gestion sont créés par le super-administrateur (écran Équipe) ; le programme national attribue les rôles aux comptes existants.",
     "delaiEscalade": "Délai avant escalade d'une urgence vitale",
     "retention": "Conservation des photos et vocaux",
     "probationJours": "Durée de vérification des nouveaux soignants",
@@ -494,7 +494,9 @@
     "rattacherDemo": "Rattacher un compte à la démonstration",
     "rattacherDemoAide": "Un compte rattaché ne voit que les demandes de démonstration et disparaît avec elle lors de l'effacement. Ne rattachez jamais un vrai soignant.",
     "mettreDemo": "Passer en démo",
-    "sortirDemo": "Sortir de la démo"
+    "sortirDemo": "Sortir de la démo",
+    "identifiant": "Téléphone ou adresse e-mail",
+    "identifiantAide": "Numéro à 8 chiffres pour les comptes ouverts par téléphone, adresse e-mail pour les comptes de gestion."
   },
   "veille": {
     "fraicheurTitre": "Dernière demande reçue",
@@ -1156,5 +1158,59 @@
     "telechargerContacts": "Contacts (CSV)",
     "whatsappAide": "Petite liste : ouvrez WhatsApp contact par contact. Grande liste : téléchargez les contacts et créez une liste de diffusion dans WhatsApp Business.",
     "journal": "Chaque export de contacts est inscrit au journal."
+  },
+  "equipe": {
+    "intro": "Créez ici les comptes du programme national, des Ordres et des autorités : vous saisissez l'adresse e-mail et le rôle, la personne reçoit une invitation (ou un lien, ou un mot de passe provisoire) et choisit son mot de passe. Chaque création est journalisée.",
+    "inviter": "Créer un compte de gestion",
+    "aucun": "Aucun compte de gestion",
+    "desactive": "désactivé",
+    "invitationEnAttente": "invitation en attente",
+    "derniereConnexion": "connecté",
+    "email": "Adresse e-mail",
+    "nom": "Nom et prénom",
+    "role": "Rôle",
+    "mode": "Remise de l'accès",
+    "modes": {
+      "invitation": "Invitation par e-mail (Supabase l'envoie)",
+      "lien": "Lien d'accès à transmettre moi-même",
+      "mot_de_passe": "Mot de passe provisoire"
+    },
+    "modeAide": {
+      "invitation": "La personne reçoit un e-mail « Vous avez été invité » et choisit son mot de passe. Si l'envoi échoue, un lien vous est donné à la place.",
+      "lien": "Un lien valable une fois, à envoyer par votre propre messagerie ou WhatsApp. La personne choisit son mot de passe en l'ouvrant.",
+      "mot_de_passe": "Un mot de passe provisoire, affiché une seule fois : transmettez-le par un canal sûr, la personne pourra le changer."
+    },
+    "creerCompte": "Créer le compte et remettre l'accès",
+    "journal": "L'adresse et le rôle sont enregistrés ; la création est inscrite au journal à votre nom.",
+    "compteCree": "Compte créé pour {email} avec le rôle « {role} ».",
+    "compteMisAJour": "Compte {email} : rôle « {role} » attribué.",
+    "motDePasseProvisoire": "Mot de passe provisoire (affiché une seule fois)",
+    "motDePasseNote": "Transmettez-le par un canal sûr. La personne se connecte avec son adresse e-mail et ce mot de passe, puis peut le changer.",
+    "lienAcces": "Lien d'accès (valable une fois)",
+    "lienNote": "Envoyez-le à la personne : il ouvre une page où elle choisit son mot de passe.",
+    "envoiEchoue": "L'e-mail n'a pas pu partir (SMTP du projet absent ou limite atteinte) : voici le lien à transmettre vous-même.",
+    "messageLien": "Bonjour, voici votre accès à Afiya (espace de gestion). Ouvrez ce lien et choisissez votre mot de passe : {lien}",
+    "invitationEnvoyee": "Invitation envoyée à {email}.",
+    "autreCompte": "Créer un autre compte",
+    "cleAdminRappel": "Rappel : le back-office demande aussi la clé d'accès du site (VITE_ADMIN_GATE_CODE). Communiquez-la à la personne séparément.",
+    "renvoyerAcces": "Renvoyer un accès",
+    "envoyer": "Envoyer"
+  },
+  "acces": {
+    "titre": "Votre accès Afiya",
+    "lienInvalide": "Ce lien d'accès n'est plus valable. Demandez un nouveau lien à l'administrateur.",
+    "bonjour": "Bonjour {nom},",
+    "roleAttribue": "Votre compte a le rôle",
+    "motDePasse": "Choisissez un mot de passe",
+    "motDePasseAide": "8 caractères au moins.",
+    "confirmer": "Confirmez le mot de passe",
+    "tropCourt": "Huit caractères au moins.",
+    "differents": "Les deux mots de passe diffèrent.",
+    "enregistrer": "Enregistrer le mot de passe",
+    "faitTitre": "Mot de passe enregistré",
+    "faitTexte": "Vous pouvez maintenant vous connecter avec votre adresse e-mail et ce mot de passe.",
+    "ouvrirGestion": "Ouvrir l'espace de gestion",
+    "ouvrirPro": "Ouvrir l'espace soignant",
+    "cleAdminNote": "L'espace de gestion demande aussi la clé d'accès du site, que l'administrateur vous communique."
   }
 }

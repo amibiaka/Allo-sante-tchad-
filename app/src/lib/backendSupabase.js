@@ -592,6 +592,25 @@ export async function connecter({ telephone, identifiant, motDePasse }) {
   return sessionCourante()
 }
 
+/* Session ouverte depuis un lien d'invitation ou de reinitialisation
+   (fragment mis de cote par main.jsx). Renvoie le type du lien. */
+export async function ouvrirSessionDepuisLien() {
+  let brut = null
+  try { brut = sessionStorage.getItem('ast.lien.acces'); sessionStorage.removeItem('ast.lien.acces') } catch { /* ignore */ }
+  if (!brut) return null
+  const p = new URLSearchParams(brut.replace(/^#/, ''))
+  if (!p.get('access_token')) return null
+  ecrireJeton({ access_token: p.get('access_token'), refresh_token: p.get('refresh_token'), expires_at: Date.now() + (Number(p.get('expires_in')) || 3600) * 1000 })
+  return p.get('type') || 'recovery'
+}
+
+export async function definirMotDePasse(motDePasse) {
+  const d = await requete('/user', { base: AUTH, methode: 'PUT', corps: { password: motDePasse } })
+  const s = await sessionCourante()
+  if (s?.profil?.telephone) poserCleLocale(s.profil.telephone, motDePasse)
+  return !!d?.id
+}
+
 export async function deconnecter() {
   try { await requete('/logout', { base: AUTH, methode: 'POST', corps: {} }) } catch { /* peu importe */ }
   ecrireJeton(null)
@@ -1354,6 +1373,14 @@ export async function exporterFichier({ format, langue, titre, feuilles, resume,
   document.body.appendChild(a); a.click(); a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
   return nom
+}
+
+/* Comptes de gestion : creation par adresse e-mail, invitation, lien ou
+   mot de passe provisoire, reinitialisation. Reserve au
+   super-administrateur, verifie par la base dans la fonction. */
+export async function comptesGestion(action, params = {}) {
+  const r = await appelFonction('/api/comptes', { action, ...params, province_id: idProvince(params.provinceCode), ville_id: idVille(params.villeCode) })
+  return r.json()
 }
 
 export async function transcrireDemande(demandeId) {

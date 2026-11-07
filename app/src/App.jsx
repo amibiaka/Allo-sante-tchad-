@@ -20,6 +20,7 @@ const APropos          = lazy(() => import('./pages/APropos'))
 const Transparence     = lazy(() => import('./pages/Transparence'))
 const EspacePro        = lazy(() => import('./pages/pro/EspacePro'))
 const Admin            = lazy(() => import('./pages/admin/Admin'))
+const Acces            = lazy(() => import('./pages/Acces'))
 
 const ROUTES = [
   ['/', Accueil],
@@ -37,6 +38,7 @@ const ROUTES = [
   ['/a-propos', APropos],
   ['/transparence', Transparence],
   ['/pro', EspacePro],
+  ['/acces', Acces],
 ]
 
 export default function App() {

@@ -105,10 +105,10 @@ function ConnexionAdmin({ surConnexion, deconnecte }) {
       <div className="carte mx-auto max-w-sm p-5">
         <h1 className="mb-4 text-center text-lg font-bold">{t('admin.titre')}</h1>
         {deconnecte && <div className="mb-3"><Alerte ton="attention">{t('admin.acces')}</Alerte></div>}
-        <Champ etiquette={t('pro.telephone')}>
+        <Champ etiquette={t('admin.identifiant')} aide={t('admin.identifiantAide')}>
           <div className="flex gap-2" dir="ltr">
-            <span className="grid min-w-[4.5rem] place-items-center rounded-xl border-2 border-sable-300 bg-sable-100 font-bold nombres-latins">+235</span>
-            <input className="champ nombres-latins" inputMode="tel" autoComplete="username"
+            {!f.telephone.includes('@') && <span className="grid min-w-[4.5rem] place-items-center rounded-xl border-2 border-sable-300 bg-sable-100 font-bold nombres-latins">+235</span>}
+            <input className="champ nombres-latins" inputMode="email" autoComplete="username"
                    value={f.telephone} onChange={(e) => setF({ ...f, telephone: e.target.value })} />
           </div>
         </Champ>
@@ -224,7 +224,7 @@ function Coque({ session, sousChemin, surChangement }) {
       {sousChemin === '/sante' && voit('sante') && <SectionSante session={session} />}
       {sousChemin === '/moderation' && admin && <SectionModeration />}
       {sousChemin === '/numeros' && admin && <SectionNumeros />}
-      {sousChemin === '/equipe' && voit('equipe') && <SectionEquipe />}
+      {sousChemin === '/equipe' && voit('equipe') && <SectionEquipe session={session} />}
       {sousChemin === '/reglages' && voit('reglages') && <SectionReglages session={session} />}
     </div>
   )

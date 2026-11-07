@@ -4,6 +4,15 @@ import App from './App'
 import { FournisseurLangue } from './lib/i18n'
 import './styles/index.css'
 
+/* Lien d'acces (invitation, mot de passe oublie) : Supabase renvoie sur
+   le site avec « #access_token=…&type=invite|recovery ». On met le
+   fragment de cote avant que le routeur ne le lise, la page #/acces le
+   consommera (session ouverte, choix du mot de passe). */
+if (/^#access_token=|[#&]type=(invite|recovery|magiclink|signup)\b/.test(location.hash) && location.hash.includes('access_token=')) {
+  try { sessionStorage.setItem('ast.lien.acces', location.hash.slice(1)) } catch { /* stockage indisponible */ }
+  history.replaceState(null, '', location.pathname + '#/acces')
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <FournisseurLangue>
