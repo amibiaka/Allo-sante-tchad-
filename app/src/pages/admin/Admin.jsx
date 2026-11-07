@@ -16,6 +16,9 @@ import TableauAdmin from './TableauAdmin'
 import Veille from './Veille'
 import { SectionDemandes, SectionSoignants, SectionGeographie, SectionModeration, SectionNumeros, SectionEquipe, SectionReglages } from './sections'
 import { TableauInstitution, SectionValidations, SectionPublications, SectionCampagnes, SectionAlertes, SectionSante } from './institutions'
+import SectionStatistiques from './statistiques'
+import SectionDeontologie from './deontologie'
+import SectionDiffusion from './diffusion'
 
 const CLE_SESSION = 'ast.admin.porte'
 
@@ -150,11 +153,14 @@ const AUTORITES = ['autorite_nationale', 'autorite_provinciale']
 const ORDRES = ['ordre_medecins', 'ordre_pharmaciens']
 const TOUS = [...ADMINS, ...AUTORITES, ...ORDRES, 'centre_numerique']
 const SECTIONS = [
-  ['/', 'tableau', '📊', TOUS],
+  ['/', 'tableau', '🏠', TOUS],
+  ['/statistiques', 'statistiques', '📊', TOUS],
+  ['/deontologie', 'deontologie', '⚖️', ['super_admin', ...ORDRES]],
   ['/validations', 'validations', '✅', ['super_admin', ...AUTORITES, ...ORDRES]],
   ['/veille', 'veille', '📈', [...ADMINS, ...AUTORITES, 'centre_numerique']],
   ['/alertes', 'alertes', '🚨', [...ADMINS, ...AUTORITES, 'centre_numerique']],
-  ['/campagnes', 'campagnes', '💉', ['super_admin', ...AUTORITES]],
+  ['/diffusion', 'diffusion', '📣', ['super_admin', ...AUTORITES, ...ORDRES, 'centre_numerique']],
+  ['/campagnes', 'campagnes', '💉', ['super_admin', ...AUTORITES, 'centre_numerique']],
   ['/publications', 'publications', '📢', ['super_admin', ...AUTORITES, ...ORDRES, 'centre_numerique']],
   ['/demandes', 'demandes', '🆘', ADMINS],
   ['/soignants', 'soignants', '🩺', ADMINS],
@@ -204,6 +210,9 @@ function Coque({ session, sousChemin, surChangement }) {
       </nav>
 
       {sousChemin === '/' && (admin ? <TableauAdmin session={session} /> : <TableauInstitution session={session} />)}
+      {sousChemin === '/statistiques' && <SectionStatistiques session={session} />}
+      {sousChemin === '/deontologie' && voit('deontologie') && <SectionDeontologie session={session} />}
+      {sousChemin === '/diffusion' && voit('diffusion') && <SectionDiffusion session={session} />}
       {sousChemin === '/validations' && voit('validations') && <SectionValidations />}
       {sousChemin === '/veille' && voit('veille') && <Veille />}
       {sousChemin === '/alertes' && voit('alertes') && <SectionAlertes />}
@@ -216,7 +225,7 @@ function Coque({ session, sousChemin, surChangement }) {
       {sousChemin === '/moderation' && admin && <SectionModeration />}
       {sousChemin === '/numeros' && admin && <SectionNumeros />}
       {sousChemin === '/equipe' && voit('equipe') && <SectionEquipe />}
-      {sousChemin === '/reglages' && superAdmin && <SectionReglages />}
+      {sousChemin === '/reglages' && voit('reglages') && <SectionReglages session={session} />}
     </div>
   )
 }

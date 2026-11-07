@@ -96,7 +96,7 @@ export default function Annuaire({ requete }) {
 
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           <Filtre actif={!type} onClick={() => setType('')}>{t('commun.tous')}</Filtre>
-          {TYPES_PRO.filter((x) => !x.secours && x.cle !== 'autre').map((x) => (
+          {TYPES_PRO.filter((x) => !x.secours && x.cle !== 'autre' && x.filtre !== false).map((x) => (
             <Filtre key={x.cle} actif={type === x.cle} onClick={() => setType(x.cle)}>
               {x.emoji} {TYPE_LIBELLE(x.cle)}
             </Filtre>
@@ -158,8 +158,8 @@ export default function Annuaire({ requete }) {
    traduction, car ce sont des pluriels d'interface tres courts. */
 export function TYPE_LIBELLE(cle) {
   const libelles = {
-    fr: { medecin: 'Médecins', infirmier: 'Infirmiers', sage_femme: 'Sages-femmes', pharmacie: 'Pharmacies', centre_sante: 'Centres' },
-    ar: { medecin: 'أطباء', infirmier: 'ممرضون', sage_femme: 'قابلات', pharmacie: 'صيدليات', centre_sante: 'مراكز' },
+    fr: { medecin: 'Médecins', infirmier: 'Infirmiers', sage_femme: 'Sages-femmes', aide_soignant: 'Aides-soignants', pharmacie: 'Pharmacies', pharmacien: 'Pharmaciens', centre_sante: 'Centres' },
+    ar: { medecin: 'أطباء', infirmier: 'ممرضون', sage_femme: 'قابلات', aide_soignant: 'مساعدو تمريض', pharmacie: 'صيدليات', pharmacien: 'صيادلة', centre_sante: 'مراكز' },
   }
   const lang = document.documentElement.lang === 'ar' ? 'ar' : 'fr'
   return libelles[lang][cle] || cle

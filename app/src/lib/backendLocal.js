@@ -1091,3 +1091,151 @@ export async function veilleVaccination() {
 }
 export async function importerFormations(lignes, surProgres) { surProgres?.(lignes.length, lignes.length); return lignes.length }
 export async function compterFormations() { return 0 }
+
+/* =====================================================================
+ * ESPACE DE GESTION ET STATISTIQUES, version demonstration.
+ * Les memes formes de reponse que les fonctions SQL, calculees en
+ * memoire sur les donnees de la demonstration locale.
+ * ===================================================================== */
+const trancheAge = (a) => {
+  if (a == null || !/^\d{1,3}$/.test(String(a))) return 'inconnu'
+  const n = Number(a)
+  return n < 1 ? '0' : n < 5 ? '1-4' : n < 15 ? '5-14' : n < 25 ? '15-24' : n < 50 ? '25-49' : n < 65 ? '50-64' : '65+'
+}
+const semaineISO = (iso) => { const d = new Date(iso); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10) }
+const reponsesDe = (d) => charger().reponses.filter((r) => r.demande_id === d.id)
+const premiereAction = (d) => reponsesDe(d).filter((r) => ['en_route', 'appelle', 'whatsapp', 'resolu'].includes(r.action))
+  .map((r) => new Date(r.created_at).getTime()).sort((a, b) => a - b)[0]
+const mediane = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2 }
+
+export async function statsResume(jours = 30, inclureDemo = false) {
+  const db = charger()
+  const depuis = Date.now() - (Number(jours) || 30) * 864e5
+  const d = db.demandes.filter((x) => new Date(x.created_at).getTime() > depuis && (inclureDemo || !x.demo))
+  const compte = (xs, f) => xs.reduce((o, x) => { const k = f(x); o[k] = (o[k] || 0) + 1; return o }, {})
+  const pros = db.pros.filter((p) => ['provisoire', 'verifie'].includes(p.statut) && !p.service_officiel && (inclureDemo || !p.demo))
+  const delais = d.map((x) => { const t = premiereAction(x); return t ? (t - new Date(x.created_at).getTime()) / 60000 : null }).filter((x) => x != null)
+  return {
+    jours, demo_inclus: !!inclureDemo, demandes: d.length, demandes_vitales: d.filter((x) => x.niveau === 1).length,
+    demandes_par_niveau: compte(d, (x) => x.niveau), demandes_par_statut: compte(d, (x) => x.statut),
+    prises_en_charge: d.filter((x) => ['pris_en_charge', 'resolu'].includes(x.statut)).length,
+    taux_prise_en_charge: d.length ? Math.round((1000 * d.filter((x) => ['pris_en_charge', 'resolu'].includes(x.statut)).length) / d.length) / 10 : null,
+    delai_prise_en_charge_min: delais.length ? Math.round(mediane(delais)) : null,
+    escaladees: d.filter((x) => x.escalade_le).length,
+    soignants_actifs: new Set(d.flatMap((x) => reponsesDe(x).map((r) => r.pro_id))).size,
+    soignants_inscrits: pros.length, soignants_verifies: pros.filter((p) => p.statut === 'verifie').length,
+    soignants_par_type: compte(pros, (p) => p.type),
+    ordonnances: db.ordonnances.filter((o) => new Date(o.created_at).getTime() > depuis).length,
+    ordonnances_servies: db.ordonnances.filter((o) => new Date(o.created_at).getTime() > depuis && o.statut === 'servie').length,
+    evenements: coffre('evenements').length, evenements_confirmes: coffre('evenements').filter((e) => ['confirme', 'transmis'].includes(e.statut)).length,
+    doses_declarees: coffre('declarations').length, cas_entraide: coffre('cas').length,
+    villes_actives: new Set(d.map((x) => x.ville_id)).size,
+  }
+}
+
+export async function statsRequete({ source = 'demandes', mesure = 'nombre', dim1 = 'province', dim2, jours = 90, provinceCode, villeCode, inclureDemo = false } = {}) {
+  const db = charger()
+  const depuis = Date.now() - (Number(jours) || 90) * 864e5
+  const prov = provinceCode ? REF.provinces.find((p) => p.code === provinceCode) : null
+  const vil = villeCode ? REF.villes.find((v) => v.code === villeCode) : null
+  let lignes
+  if (source === 'professionnels') lignes = db.pros.filter((p) => !p.service_officiel && (inclureDemo || !p.demo))
+  else if (source === 'demandes') lignes = db.demandes.filter((x) => new Date(x.created_at).getTime() > depuis && (inclureDemo || !x.demo))
+  else if (source === 'ordonnances') lignes = db.ordonnances.filter((x) => new Date(x.created_at).getTime() > depuis)
+  else if (source === 'vaccins') lignes = coffre('declarations')
+  else if (source === 'evenements') lignes = coffre('evenements')
+  else if (source === 'entraide') lignes = coffre('cas')
+  else if (source === 'reponses') lignes = db.demandes.filter((x) => inclureDemo || !x.demo).flatMap((d) => reponsesDe(d).map((r) => ({ ...d, action: r.action, type_pro: db.pros.find((p) => p.id === r.pro_id)?.type })))
+  else throw new Error('source inconnue')
+  if (prov) lignes = lignes.filter((x) => x.province_id === prov.id)
+  if (vil) lignes = lignes.filter((x) => x.ville_id === vil.id)
+  const cle = (x, dim) => {
+    switch (dim) {
+      case 'province': return nomProvinceLocale(x.province_id) || '(sans province)'
+      case 'ville': return nomVilleLocale(x.ville_id) || '(sans ville)'
+      case 'district': return REF.villes.find((v) => v.id === x.ville_id)?.district_id ? 'District ' + REF.villes.find((v) => v.id === x.ville_id).district_id : '(sans district)'
+      case 'quartier': return x.quartier_id ? (REF.quartiers.find((q) => q.id === x.quartier_id)?.nom_fr || '(sans quartier)') : '(sans quartier)'
+      case 'jour': return String(x.created_at).slice(0, 10)
+      case 'semaine': return semaineISO(x.created_at)
+      case 'mois': return String(x.created_at).slice(0, 7)
+      case 'niveau': return String(x.niveau)
+      case 'statut': return String(x.statut)
+      case 'sexe': return x.sexe || 'inconnu'
+      case 'tranche_age': return trancheAge(x.age_approx)
+      case 'pour_qui': return x.pour_qui || 'inconnu'
+      case 'escalade': return x.escalade_le ? 'oui' : 'non'
+      case 'action': return x.action
+      case 'type_pro': return x.type_pro || 'inconnu'
+      case 'type': return String(x.type)
+      case 'en_ligne': return x.en_ligne ? 'oui' : 'non'
+      case 'diffusion': return x.diffusion ? 'diffusion' : 'pharmacie_choisie'
+      case 'vaccin': return x.vaccin
+      case 'dose': return String(x.dose)
+      case 'a_l_heure': return x.a_l_heure ? 'oui' : 'non'
+      case 'urgence': return String(x.urgence)
+      case 'specialite': return x.specialite || 'non_precisee'
+      case 'categorie': return null
+      default: throw new Error('dimension inconnue')
+    }
+  }
+  const eclate = (x) => (dim1 === 'categorie' || dim2 === 'categorie')
+    ? ((x.categories || []).length ? x.categories : ['non_precise']).map((c) => ({ ...x, _cat: c })) : [x]
+  const paquets = new Map()
+  for (const x0 of lignes) for (const x of eclate(x0)) {
+    const k1 = dim1 === 'categorie' ? x._cat : cle(x, dim1)
+    const k2 = dim2 ? (dim2 === 'categorie' ? x._cat : cle(x, dim2)) : ''
+    const k = k1 + '\u0000' + k2
+    const e = paquets.get(k) || { cle1: k1, cle2: k2, valeurs: [] }
+    if (mesure === 'delai_median') { const t = premiereAction(x); if (t) e.valeurs.push((t - new Date(x.created_at).getTime()) / 60000) }
+    else e.valeurs.push(1)
+    paquets.set(k, e)
+  }
+  return [...paquets.values()]
+    .map((e) => ({ cle1: e.cle1, cle2: e.cle2, valeur: mesure === 'delai_median' ? (e.valeurs.length ? Math.round(mediane(e.valeurs)) : null) : e.valeurs.length }))
+    .filter((e) => e.valeur != null)
+    .sort((a, b) => b.valeur - a.valeur)
+}
+
+export async function activiteProfessionnels(jours = 90, inclureDemo = false) {
+  const db = charger()
+  const depuis = Date.now() - (Number(jours) || 90) * 864e5
+  return db.pros.filter((p) => !p.service_officiel && (inclureDemo || !p.demo)).map((p) => {
+    const rs = db.reponses.filter((r) => r.pro_id === p.id && new Date(r.created_at).getTime() > depuis).map((r) => ({ ...r, demande: db.demandes.find((d) => d.id === r.demande_id) || { id: r.demande_id, created_at: r.created_at } }))
+    const delais = rs.filter((r) => ['en_route', 'appelle', 'whatsapp', 'resolu'].includes(r.action)).map((r) => (new Date(r.created_at) - new Date(r.demande.created_at)) / 60000)
+    return { id: p.id, nom: p.nom, type: p.type, statut: p.statut, ville: nomVilleLocale(p.ville_id), province: nomProvinceLocale(p.province_id), en_ligne: !!p.en_ligne,
+      inscrit_le: p.created_at, probation_fin: p.probation_fin, derniere_activite: p.derniere_activite,
+      reponses: rs.length, demandes_distinctes: new Set(rs.map((r) => r.demande.id)).size,
+      prises_en_charge: rs.filter((r) => ['en_route', 'appelle', 'whatsapp', 'resolu'].includes(r.action)).length,
+      delai_median_min: delais.length ? Math.round(mediane(delais)) : null,
+      signalements_ouverts: charger().signalements.filter((s) => s.cible_id === p.id && s.statut === 'ouvert').length, demo: !!p.demo }
+  })
+}
+
+export async function contactsDiffusion({ types, provinceCode } = {}) {
+  const prov = provinceCode ? REF.provinces.find((p) => p.code === provinceCode) : null
+  return charger().pros.filter((p) => ['provisoire', 'verifie'].includes(p.statut) && !p.service_officiel && !p.demo && (p.whatsapp || p.telephone)
+      && (!types?.length || types.includes(p.type)) && (!prov || p.province_id === prov.id))
+    .map((p) => ({ nom: p.nom, type: p.type, ville: nomVilleLocale(p.ville_id), province: nomProvinceLocale(p.province_id), whatsapp: p.whatsapp || p.telephone }))
+}
+export async function basculerDemo(proId, demo) { const p = charger().pros.find((x) => x.id === proId); if (!p) return false; p.demo = !!demo; sauver(); return true }
+export async function signalementsPro(proId) { return charger().signalements.filter((s) => s.cible_id === proId) }
+export async function adminDistricts() { return coffre('districts').map((d) => ({ ...d, province_nom: nomProvinceLocale(d.province_id), province_code: REF.provinces.find((p) => p.id === d.province_id)?.code || null })) }
+export async function enregistrerDistrict(d) {
+  const l = coffre('districts'); const prov = REF.provinces.find((p) => p.code === d.provinceCode)
+  const e = d.id ? l.find((x) => x.id === d.id) : null
+  if (e) Object.assign(e, { nom: d.nom, province_id: prov?.id ?? null, pcode: d.pcode || null })
+  else l.push({ id: 900 + l.length + 1, nom: d.nom, province_id: prov?.id ?? null, pcode: d.pcode || null, corrige: true })
+  sauver(); return e || l[l.length - 1]
+}
+export async function adminFormations({ districtId, recherche } = {}) {
+  return coffre('formations').filter((f) => (!districtId || f.district_id === Number(districtId)) && (!recherche || f.nom.toLowerCase().includes(recherche.toLowerCase())))
+}
+export async function enregistrerFormation(f) {
+  const l = coffre('formations'); const e = f.code_msp ? l.find((x) => x.code_msp === f.code_msp) : null
+  const corps = { nom: f.nom, type: f.type || 'CS', affiliation: f.affiliation || 'PUB', fonctionnelle: Number(f.fonctionnelle) ? 1 : 0, lat: f.lat ? Number(f.lat) : null, lng: f.lng ? Number(f.lng) : null, district_id: f.district_id ? Number(f.district_id) : null, source: 'cms' }
+  if (e) Object.assign(e, corps); else l.push({ code_msp: 900000 + l.length, ...corps })
+  sauver(); return e || l[l.length - 1]
+}
+export async function majVilleDistrict() { return true }
+export async function exporterFichier() { throw new Error('EXPORT_INDISPONIBLE_DEMO') }
+export async function transcrireDemande() { throw new Error('VOIX_INDISPONIBLE_DEMO') }

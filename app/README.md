@@ -64,6 +64,8 @@ de ces fichiers **l'un après l'autre**, en cliquant sur **Run** à chaque fois 
 | 8 | `supabase/11_sante_referentiel.sql` | 126 districts sanitaires du ministère, liaison aux villes |
 | 9 | `supabase/12a_roles_institutionnels.sql` puis `12_programmes_et_institutions.sql` | Rôles du ministère et des Ordres, publications, campagnes, entraide, signalements |
 | 10 | `supabase/13_pilote_operationnel.sql` | Phase pilote : prolonge les inscriptions en cours |
+| 11 | `supabase/14a_types_soignants.sql` **seul**, puis `14_gestion_et_statistiques.sql` | Espace de gestion : droits des Ordres et du programme national, démonstration isolée, statistiques (résumé, requête libre, suivi des soignants, contacts de diffusion), transcription vocale |
+| 12 | `supabase/15_jeu_demonstration.sql` | *Facultatif, pour une présentation* — ~1 600 lignes fictives (61 soignants, 320 demandes, ordonnances, vaccinations, entraide…) isolées et effaçables en un clic |
 
 Les autres fichiers du dossier servent plus tard : `04_effacer_demo.sql` (avant
 la mise en service réelle), `05_creer_administrateur.sql` (étape 5 ci-dessous)
@@ -87,7 +89,11 @@ Dans Netlify : **Site configuration → Environment variables → Add a variable
 | `VITE_ADMIN_PATH` | *recommandé* — l'adresse secrète du back-office, ex. `gestion-tchad-2026` |
 | `VITE_ADMIN_GATE_CODE` | *recommandé* — un mot de passe d'entrée du back-office |
 | `SUPABASE_URL` | la même URL qu'en haut (pour les tâches automatiques) |
+| `SUPABASE_ANON_KEY` | la même clé publique `anon` (pour les fonctions d'export et de voix) |
 | `SUPABASE_SERVICE_ROLE_KEY` | la clé secrète `service_role` — **ne la mettez jamais ailleurs** |
+| `ANTHROPIC_API_KEY` | *facultatif* — clé de l'API Claude (console.anthropic.com, paiement à l'usage) : rédige le texte des rapports Word en français, anglais ou arabe et structure les messages vocaux. Sans elle, le rapport sort avec un texte composé à partir des chiffres. |
+| `ANTHROPIC_MODEL` | *facultatif* — le modèle Claude à utiliser (sinon `claude-sonnet-4-5`, puis repli automatique) |
+| `OPENAI_API_KEY` | *facultatif* — clé OpenAI (paiement à l'usage) pour la transcription des messages vocaux (Whisper, français et arabe). Sans elle, les vocaux restent à écouter. |
 
 Puis **Deploys → Trigger deploy → Deploy site**.
 
@@ -205,11 +211,28 @@ Institutions (novembre 2026), chacune avec ses seuls écrans :
   temps réel, signalements communautaires à trier, campagnes de vaccination,
   publications, validation des agents publics (infirmiers, sages-femmes,
   centres de santé).
-- **Ordre des médecins** et **Ordre des pharmaciens** — valident, prolongent,
-  suspendent ou refusent les inscriptions de leur profession ; publient des
-  directives à leurs membres.
-- **Centre national de santé numérique** — attribue les rôles, règle la
-  plateforme, lit le journal.
+- **Ordre des médecins** (médecins, infirmiers, sages-femmes, aides-soignants)
+  et **Ordre des pharmaciens** (pharmacies, pharmaciens) — valident,
+  prolongent, suspendent ou refusent les inscriptions de leur profession ;
+  suivent l'activité de leurs inscrits en comptages (écran *Déontologie* :
+  réponses, prises en charge, délai médian, signalements, signaux à
+  regarder — jamais une demande ni un patient) ; publient des directives.
+- **Programme national de santé numérique** — crée et corrige les districts
+  sanitaires, les formations et le rattachement des villes ; lance des
+  campagnes d'information (modèles bilingues dengue, paludisme, choléra,
+  rougeole, méningite… envoyés par WhatsApp aux soignants inscrits et
+  publiés dans l'application) ; lit toutes les statistiques ; attribue les
+  rôles et règle la plateforme.
+
+**Statistiques** (tous les comptes de gestion) : un résumé du secteur, douze
+vues prêtes, une requête libre (données × mesure × une ou deux dimensions :
+province, ville, district sanitaire, quartier, jour/semaine/mois, motif,
+niveau d'urgence, statut, sexe, tranche d'âge, vaccin, dose…) dessinée en
+barres, courbe, empilées, camembert ou tableau ; exports CSV, Excel et Word
+avec un texte d'analyse rédigé en français, en anglais ou en arabe. Tout est
+calculé dans la base, en comptages, borné au périmètre du compte. La
+démonstration est exclue tant que l'interrupteur n'est pas enclenché, et un
+bandeau le dit quand elle l'est.
 
 Chaque décision passe par une fonction de la base qui vérifie le rôle de
 l'appelant et l'inscrit au journal : l'écran n'est qu'une fenêtre.
@@ -349,11 +372,13 @@ src/
   pages/            écrans (accueil, urgence, suivi, annuaire, pharmacie, pro/, admin/)
   components/       briques d'interface, sélecteur de zone, vocal, photo
   lib/              routeur, i18n, accès aux données, liens WhatsApp, médias, réseau
-  i18n/             fr, en, ar, ar-td (787 clés, parité fr/en/ar vérifiée)
+  i18n/             fr, en, ar, ar-td (1 012 clés, parité fr/en/ar vérifiée)
   data/             geo.json (23 provinces), urgences.json, demo.json,
                     sante.json (1 985 formations sanitaires), vaccins.json (calendrier PEV)
-supabase/           SQL à coller dans l'ordre (01 à 13, voir le tableau plus haut)
-netlify/functions/  escalade des urgences (5 min) et purge des médias (nuit)
+supabase/           SQL à coller dans l'ordre (01 à 15, voir le tableau plus haut)
+netlify/functions/  escalade des urgences (5 min), purge des médias (nuit),
+                    export Excel/Word (/api/export), transcription vocale (/api/voix + toutes les 10 min) ;
+                    lib/ : zip, xlsx, docx écrits à la main (aucune dépendance), appel à Claude
 netlify/edge-functions/  référentiel géographique servi par le CDN
 android/            configuration de l'application Android (Trusted Web Activity)
 scripts/            SQL géographique, référentiel sanitaire, icônes, textes, poids, build fichier unique

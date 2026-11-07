@@ -106,7 +106,12 @@ export const TYPES_PRO = [
   { cle: 'medecin',          emoji: '🩺', soin: true },
   { cle: 'infirmier',        emoji: '💉', soin: true },
   { cle: 'sage_femme',       emoji: '🤱', soin: true },
+  // Ajoutes en novembre 2026 (validation par les Ordres). Absents des
+  // filtres de l'annuaire public pour le garder leger : ils restent
+  // visibles dans « Tous ».
+  { cle: 'aide_soignant',    emoji: '🧑‍⚕️', soin: true, filtre: false },
   { cle: 'pharmacie',        emoji: '💊', soin: false },
+  { cle: 'pharmacien',       emoji: '⚕️', soin: false, filtre: false },
   { cle: 'centre_sante',     emoji: '🏥', soin: true },
   { cle: 'police',           emoji: '👮', secours: true },
   { cle: 'gendarmerie',      emoji: '🛡️', secours: true },

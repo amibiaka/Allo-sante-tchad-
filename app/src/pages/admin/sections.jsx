@@ -613,10 +613,12 @@ function FicheProfil({ profil, geo, surAction }) {
 }
 
 /* =================== REGLAGES ====================================== */
-export function SectionReglages() {
+export function SectionReglages({ session }) {
   const { t } = useLangue()
   const [r, setR] = useState(null)
   const [ok, setOk] = useState(false)
+  const [effaces, setEffaces] = useState(null)
+  const superAdmin = session?.profil?.role === 'super_admin'
 
   const charger = useCallback(() => { db.adminReglages().then(setR).catch(() => setR({})) }, [])
   useEffect(() => { charger() }, [charger])
@@ -660,11 +662,25 @@ export function SectionReglages() {
         </Case>
       </Champ>
 
-      <div className="mt-6 space-y-2 border-t border-sable-200 pt-4">
-        <Bouton variante="danger" className="w-full"
-                onClick={() => confirm(t('admin.effacerDemoConfirme')) && db.adminEffacerDemo().then(charger)}>
-          🧹 {t('admin.effacerDemo')}
-        </Bouton>
+      <div className="mt-6 border-t border-sable-200 pt-4">
+        <h3 className="mb-2 text-sm font-bold text-nil-900">🧪 {t('admin.demoTitre')}</h3>
+        <p className="aide mb-3">{t('admin.demoIntro')}</p>
+        <Champ>
+          <Case coche={r.stats_inclure_demo?.actif === true} onChange={(v) => majer('stats_inclure_demo', { actif: v })}>
+            {t('stats.inclureDemo')}
+          </Case>
+        </Champ>
+        <RattacherDemo />
+        {effaces && <div className="mb-3"><Alerte ton="succes">{t('admin.demoEffacee')} {Object.entries(effaces).map(([k, v]) => `${k} : ${v}`).join(' · ')}</Alerte></div>}
+      </div>
+
+      <div className="mt-4 space-y-2 border-t border-sable-200 pt-4">
+        {superAdmin && (
+          <Bouton variante="danger" className="w-full"
+                  onClick={() => confirm(t('admin.effacerDemoConfirme')) && db.adminEffacerDemo().then((n) => { setEffaces(n || {}); charger() })}>
+            🧹 {t('admin.effacerDemo')}
+          </Bouton>
+        )}
         {MODE_DEMO && (
           <Bouton variante="secondaire" className="w-full"
                   onClick={() => confirm(t('admin.reinitialiserConfirme')) && db.reinitialiser().then(() => location.reload())}>
@@ -672,6 +688,47 @@ export function SectionReglages() {
           </Bouton>
         )}
       </div>
+    </div>
+  )
+}
+
+/* Rattacher un compte reel (inscrit normalement) a la demonstration : sa
+   fiche devient « demo », il ne voit plus que les demandes de
+   demonstration, et il disparait avec elle a l'effacement. */
+function RattacherDemo() {
+  const { t } = useLangue()
+  const [recherche, setRecherche] = useState('')
+  const [liste, setListe] = useState(null)
+  const [erreur, setErreur] = useState(null)
+  const chercher = async () => {
+    setErreur(null); setListe(null)
+    try { setListe((await db.adminPros({ recherche: recherche.trim() })).filter((p) => !p.service_officiel).slice(0, 12)) }
+    catch { setListe([]); setErreur(t('commun.erreurReseau')) }
+  }
+  const basculer = async (p) => {
+    setErreur(null)
+    try { await db.basculerDemo(p.id, !p.demo); chercher() }
+    catch (e) { setErreur(/HORS_PERIMETRE|42501/.test(e?.message) ? t('admin.horsPerimetre') : t('commun.erreurReseau')) }
+  }
+  return (
+    <div className="rounded-xl border-2 border-sable-300 bg-white p-3">
+      <p className="mb-2 text-[13px] font-bold">{t('admin.rattacherDemo')}</p>
+      <div className="mb-2 flex gap-2">
+        <input className="champ" placeholder={t('commun.rechercher')} value={recherche} onChange={(e) => setRecherche(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && chercher()} />
+        <Bouton taille="petit" variante="secondaire" onClick={chercher} disabled={recherche.trim().length < 2}>{t('commun.rechercher')}</Bouton>
+      </div>
+      {erreur && <div className="mb-2"><Alerte ton="danger">{erreur}</Alerte></div>}
+      {liste && (liste.length === 0 ? <p className="aide">{t('inst.rienAValider')}</p> : (
+        <ul className="space-y-1">
+          {liste.map((p) => (
+            <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-sable-300 p-2 text-[13px]">
+              <div className="min-w-0"><p className="truncate font-bold">{p.nom}{p.demo ? ` · ${t('badge.demo')}` : ''}</p><p className="aide truncate">{TYPE_LIBELLE(p.type) || p.type} · {p.ville_nom || '—'} · <span className="nombres-latins" dir="ltr">{p.telephone}</span></p></div>
+              <Bouton taille="petit" variante={p.demo ? 'secondaire' : 'danger'} onClick={() => basculer(p)}>{p.demo ? t('admin.sortirDemo') : t('admin.mettreDemo')}</Bouton>
+            </li>
+          ))}
+        </ul>
+      ))}
+      <p className="aide mt-2">{t('admin.rattacherDemoAide')}</p>
     </div>
   )
 }

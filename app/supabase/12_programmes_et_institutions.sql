@@ -452,7 +452,7 @@ create or replace function public.preparer_cas() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if new.code is null then
-    new.code := 'E-' || upper(substr(translate(encode(gen_random_bytes(4), 'hex'), '0o1il', 'XYZWV'), 1, 4));
+    new.code := 'E-' || upper(substr(translate(replace(gen_random_uuid()::text, '-', ''), '0o1il', 'XYZWV'), 1, 4));
   end if;
   if new.titre ~ '\d{6,}' or new.description ~ '\d{8,}' then
     raise exception 'IDENTIFIANT_INTERDIT' using hint = 'Aucun numero de telephone ni identifiant dans un cas d''entraide.';
@@ -543,7 +543,7 @@ begin
   tel := nullif(regexp_replace(coalesce(p->>'contact_tel',''), '[^0-9+]', '', 'g'), '');
   if tel is not null then perform public.limiter('evt:tel:' || tel, 5); end if;
   perform public.limiter('evt:ville:' || v.id::text, 60);
-  c := 'A-' || upper(substr(translate(encode(gen_random_bytes(4), 'hex'), '0o1il', 'XYZWV'), 1, 4));
+  c := 'A-' || upper(substr(translate(replace(gen_random_uuid()::text, '-', ''), '0o1il', 'XYZWV'), 1, 4));
   insert into evenements_communautaires (code, type, nb_personnes, ville_id, province_id, quartier_id, lieu_texte,
                                          description, contact_tel, debut_estime, demo)
   values (c, p->>'type', nullif(p->>'nb_personnes','')::smallint, v.id, v.province_id,

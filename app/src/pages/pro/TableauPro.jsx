@@ -76,7 +76,7 @@ export default function TableauPro({ session, surChangement }) {
       <div className="mb-4 flex gap-2">
         {[
           ['demandes', '🆘 ' + t('pro.demandes')],
-          ...(pro.type === 'pharmacie' ? [['ordonnances', '💊 ' + t('pro.ordonnances')]] : []),
+          ...(['pharmacie', 'pharmacien'].includes(pro.type) ? [['ordonnances', '💊 ' + t('pro.ordonnances')]] : []),
           ['entraide', '🤝 ' + t('pro.entraide')],
           ['profil', '👤 ' + t('pro.profil')],
         ].map(([v, l]) => (
@@ -257,6 +257,7 @@ function ModaleDemande({ demande, onFermer }) {
           <audio controls src={vocal} className="w-full" preload="none" />
         </div>
       )}
+      <Transcription demande={demande} t={t} />
 
       {demande.lat != null && (
         <a className="lien mt-3 inline-block"
@@ -477,6 +478,36 @@ function ProfilPro({ pro, surChangement }) {
 
       {ok && <div className="mb-3"><Alerte ton="succes">{t('pro.monProfilMaj')}</Alerte></div>}
       <Bouton className="w-full" onClick={enregistrer} enCours={enCours}>{t('commun.enregistrer')}</Bouton>
+    </div>
+  )
+}
+
+/* Le message vocal, lu : transcrit par la fonction « voix » (Whisper
+   puis Claude). S'il ne l'est pas encore, le soignant peut le demander ;
+   si le service n'est pas configure, le bouton disparait sans bruit. */
+function Transcription({ demande, t }) {
+  const [etat, setEtat] = useState({ texte: demande.transcription || null, analyse: demande.analyse_vocale || null, enCours: false, indisponible: false })
+  useEffect(() => { setEtat({ texte: demande.transcription || null, analyse: demande.analyse_vocale || null, enCours: false, indisponible: false }) }, [demande.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (!demande.vocal_url && !etat.texte) return null
+  const demander = async () => {
+    setEtat((e) => ({ ...e, enCours: true }))
+    try {
+      const r = await db.transcrireDemande(demande.id)
+      setEtat({ texte: r?.transcription || null, analyse: r?.analyse || null, enCours: false, indisponible: !r?.transcription })
+    } catch { setEtat((e) => ({ ...e, enCours: false, indisponible: true })) }
+  }
+  if (!etat.texte) {
+    if (etat.indisponible) return null
+    return <Bouton taille="petit" variante="secondaire" className="mt-2" onClick={demander} enCours={etat.enCours}>📝 {t('pro.transcrire')}</Bouton>
+  }
+  const a = etat.analyse || {}
+  return (
+    <div className="mt-2 rounded-xl border-2 border-sable-300 bg-sable-50 p-3">
+      <p className="etiquette">{t('pro.transcription')}{a.langue ? ` · ${String(a.langue).toUpperCase()}` : ''}</p>
+      <p className="whitespace-pre-line text-[14px]" dir="auto">{etat.texte}</p>
+      {a.resume && <p className="mt-2 text-[13px] font-bold">{a.resume}</p>}
+      {(a.mots_cles?.length > 0) && <p className="aide">{a.mots_cles.join(' · ')}</p>}
+      <p className="aide mt-1">{t('pro.transcriptionNote')}</p>
     </div>
   )
 }

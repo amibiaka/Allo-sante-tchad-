@@ -209,6 +209,7 @@ const SEL_DEM = [
   'id,code,pour_qui,niveau,categories,description,vocal_url,age_approx,sexe',
   'province_id,ville_id,quartier_id,quartier_libre,ville_libre,lieu_texte,lat,lng',
   'statut,escalade_le,resolu_le,demo,created_at,updated_at,a_contact',
+  'transcription,analyse_vocale,transcrit_le',
   'villes(nom_fr)', 'quartiers(nom_fr)',
   'reponses(pro_id,action,message,created_at,professionnels(nom,type,statut,telephone,whatsapp,demo))',
 ].join(',')
@@ -884,11 +885,18 @@ export async function adminReglages() {
 }
 
 export async function adminMajReglage(cle, valeur) {
-  await requete('/reglages', {
-    methode: 'POST',
-    entetes: { Prefer: 'resolution=merge-duplicates' },
-    corps: { cle, valeur, updated_at: new Date().toISOString() },
-  })
+  const l = await requete('/reglages' + q({ cle: 'eq.' + cle }), {
+    methode: 'PATCH', entetes: { Prefer: 'return=representation' },
+    corps: { valeur, updated_at: new Date().toISOString() },
+  }).catch(() => null)
+  if (!l?.length) {
+    await requete('/reglages', {
+      methode: 'POST',
+      entetes: { Prefer: 'resolution=merge-duplicates' },
+      corps: { cle, valeur, updated_at: new Date().toISOString() },
+    })
+  }
+  journaliser('reglage.maj', 'reglage', cle, valeur)
   return adminReglages()
 }
 
@@ -926,10 +934,9 @@ export async function adminCreerProfil() {
 }
 
 export async function adminEffacerDemo() {
-  await requete('/demandes' + q({ demo: 'is.true' }), { methode: 'DELETE' }).catch(() => {})
-  await requete('/ordonnances' + q({ demo: 'is.true' }), { methode: 'DELETE' }).catch(() => {})
-  await requete('/professionnels' + q({ demo: 'is.true' }), { methode: 'DELETE' })
-  return true
+  /* Une seule fonction SQL : elle supprime dans le bon ordre, refuse
+     tout autre compte que le super-administrateur et s'inscrit au journal. */
+  return rpc('effacer_demo') || {}
 }
 
 function journaliser(action, cibleType, cibleId, detail) {
@@ -1026,12 +1033,12 @@ function nommerVilles(lignes) {
   })
 }
 
-export async function veilleSyndromique(jours = 30) {
-  return nommerVilles(await rpc('veille_syndromique', { p_jours: Number(jours) || 30 }))
+export async function veilleSyndromique(jours = 30, inclureDemo = false) {
+  return nommerVilles(await rpc('veille_syndromique', { p_jours: Number(jours) || 30, p_inclure_demo: !!inclureDemo }))
 }
 
-export async function veilleAnomalies() {
-  return nommerVilles(await rpc('veille_anomalies', {}))
+export async function veilleAnomalies(inclureDemo = false) {
+  return nommerVilles(await rpc('veille_anomalies', { p_inclure_demo: !!inclureDemo }))
 }
 
 /* La date de la derniere demande reelle du perimetre. Une colonne, une
@@ -1202,8 +1209,8 @@ export async function evenements({ statut, jours = 90 } = {}) {
 }
 export const trierEvenement = (id, statut, note) => rpc('trier_evenement', { p_id: id, p_statut: statut, p_note: note || null })
 
-export async function veilleVaccination(jours = 90) {
-  const l = await rpc('veille_vaccination', { p_jours: Number(jours) || 90 }) || []
+export async function veilleVaccination(jours = 90, inclureDemo = false) {
+  const l = await rpc('veille_vaccination', { p_jours: Number(jours) || 90, p_inclure_demo: !!inclureDemo }) || []
   return l.map((r) => ({ ...r, province_nom: nomProvince(r.province_id) }))
 }
 
@@ -1223,4 +1230,133 @@ export async function compterFormations() {
   })
   const cr = r.headers.get('content-range') || ''
   return Number(cr.split('/')[1]) || 0
+}
+
+/* =====================================================================
+ * ESPACE DE GESTION ET STATISTIQUES (novembre 2026)
+ * Ordres, programme national de sante numerique : statistiques
+ * agregees, suivi d'activite, referentiel, diffusion. Les fonctions SQL
+ * ne renvoient que des comptages, bornes au perimetre du compte ; les
+ * exports Excel et Word passent par la fonction Netlify « export », qui
+ * verifie le jeton de session avant de produire le fichier.
+ * ===================================================================== */
+const idProvince = (code) => (code ? provinceParCode(code)?.id ?? null : null)
+const idVille = (code) => (code ? villeParCode(code)?.id ?? null : null)
+
+export const statsResume = (jours = 30, inclureDemo = false) =>
+  rpc('stats_resume', { p_jours: Number(jours) || 30, p_inclure_demo: !!inclureDemo })
+
+/* Requete generique. Les codes (province, ville) sont traduits en
+   identifiants ici ; la base ne connait que la liste blanche des
+   dimensions, rien de ce que l'utilisateur tape n'y entre. */
+export async function statsRequete({ source, mesure, dim1, dim2, jours, provinceCode, villeCode, districtId, inclureDemo, langue } = {}) {
+  const p = { source, mesure: mesure || 'nombre', dim1, dim2: dim2 || null, jours: Number(jours) || 90,
+    province_id: idProvince(provinceCode), ville_id: idVille(villeCode), district_id: districtId || null,
+    inclure_demo: !!inclureDemo, langue: langue === 'ar' ? 'ar' : 'fr' }
+  return (await rpc('stats_requete', { p })) || []
+}
+
+export async function activiteProfessionnels(jours = 90, inclureDemo = false) {
+  return (await rpc('activite_professionnels', { p_jours: Number(jours) || 90, p_inclure_demo: !!inclureDemo })) || []
+}
+
+export async function contactsDiffusion({ types, provinceCode } = {}) {
+  return (await rpc('contacts_diffusion', { p_types: types?.length ? types : null, p_province: idProvince(provinceCode) })) || []
+}
+
+export const basculerDemo = (proId, demo) => rpc('basculer_demo', { p_pro: proId, p_demo: !!demo })
+
+/* Signalements visant un soignant donne (l'Ordre ne voit que ceux de sa
+   competence : le RLS fait le tri). */
+export const signalementsPro = (proId) =>
+  requete('/signalements' + q({ select: '*', cible_type: 'eq.professionnel', cible_id: 'eq.' + proId, order: 'created_at.desc' }))
+
+/* --- Referentiel : districts, formations sanitaires, villes ----------- */
+export async function adminDistricts() {
+  const l = await requete('/districts_sanitaires' + q({ select: 'id,pcode,nom,province_id,corrige', order: 'nom' })) || []
+  return l.map((d) => ({ ...d, province_nom: nomProvince(d.province_id), province_code: referentiel().provinces.find((p) => p.id === d.province_id)?.code || null }))
+}
+export async function enregistrerDistrict(d) {
+  const corps = { nom: d.nom.trim(), province_id: idProvince(d.provinceCode), pcode: d.pcode?.trim() || null, corrige: true }
+  let l
+  if (d.id) {
+    l = await requete('/districts_sanitaires' + q({ select: '*', id: 'eq.' + d.id }), { methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps })
+  } else {
+    const id = await rpc('prochain_id_district')
+    l = await requete('/districts_sanitaires', { methode: 'POST', entetes: { Prefer: 'return=representation' }, corps: { id, ...corps } })
+  }
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('district.' + (d.id ? 'maj' : 'creation'), 'district', l[0].id, { nom: corps.nom })
+  return l[0]
+}
+export async function adminFormations({ districtId, recherche, limite = 200 } = {}) {
+  const p = { select: 'code_msp,nom,type,affiliation,fonctionnelle,lat,lng,district_id,source,maj_le', order: 'nom', limit: String(limite) }
+  if (districtId) p.district_id = 'eq.' + districtId
+  if (recherche) p.nom = 'ilike.*' + echappe(recherche) + '*'
+  return await requete('/formations_sanitaires' + q(p)) || []
+}
+export async function enregistrerFormation(f) {
+  const corps = { nom: f.nom.trim(), type: f.type || 'CS', affiliation: f.affiliation || 'PUB', fonctionnelle: Number(f.fonctionnelle) ? 1 : 0,
+    lat: f.lat === '' || f.lat == null ? null : Number(f.lat), lng: f.lng === '' || f.lng == null ? null : Number(f.lng),
+    district_id: f.district_id ? Number(f.district_id) : null, source: 'cms', maj_le: new Date().toISOString() }
+  let l
+  if (f.code_msp) {
+    l = await requete('/formations_sanitaires' + q({ select: '*', code_msp: 'eq.' + f.code_msp }), { methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps })
+  } else {
+    const code = await rpc('prochain_code_formation')
+    l = await requete('/formations_sanitaires', { methode: 'POST', entetes: { Prefer: 'return=representation' }, corps: { code_msp: code, ...corps } })
+  }
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('formation.' + (f.code_msp ? 'maj' : 'creation'), 'formation', l[0].code_msp, { nom: corps.nom })
+  return l[0]
+}
+export async function majVilleDistrict(villeCode, districtId) {
+  const v = villeParCode(villeCode)
+  if (!v) throw new Error('REFERENTIEL_INDISPONIBLE')
+  const l = await requete('/villes' + q({ select: 'id,code', id: 'eq.' + v.id }), {
+    methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps: { district_id: districtId ? Number(districtId) : null },
+  })
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('ville.district', 'ville', v.id, { district_id: districtId })
+  await rafraichirRef().catch(() => {})
+  return true
+}
+
+/* --- Exports et voix : fonctions Netlify ------------------------------ */
+/* Le fichier est produit cote serveur (xlsx, docx) a partir de donnees
+   deja agregees : le navigateur n'embarque aucune bibliotheque de
+   bureautique. Le jeton de session part dans l'en-tete, jamais dans
+   l'adresse. */
+async function appelFonction(chemin, corps) {
+  const j = await jetonValide()
+  if (!j?.access_token) throw new Error('SESSION_REQUISE')
+  const r = await fetch(chemin, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${j.access_token}` },
+    body: JSON.stringify(corps),
+  })
+  if (!r.ok) {
+    let detail = ''
+    try { detail = (await r.json()).erreur || '' } catch { /* texte brut */ }
+    throw new Error(detail || `HTTP ${r.status}`)
+  }
+  return r
+}
+
+export async function exporterFichier({ format, langue, titre, feuilles, resume, narration }) {
+  const r = await appelFonction('/api/export', { format, langue, titre, feuilles, resume, narration })
+  const blob = await r.blob()
+  const nom = (r.headers.get('content-disposition') || '').match(/filename="?([^";]+)/)?.[1]
+    || `afiya-${new Date().toISOString().slice(0, 10)}.${format}`
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = nom
+  document.body.appendChild(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  return nom
+}
+
+export async function transcrireDemande(demandeId) {
+  const r = await appelFonction('/api/voix', { demande_id: demandeId })
+  return r.json()
 }

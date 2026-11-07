@@ -377,7 +377,10 @@
     "renvoyer": "Renvoyer le lien",
     "renvoye": "Lien renvoyé",
     "entraide": "Entraide",
-    "directives": "Informations des autorités"
+    "directives": "Informations des autorités",
+    "transcrire": "Lire le message vocal (transcription)",
+    "transcription": "Message vocal transcrit",
+    "transcriptionNote": "Transcription automatique : écoutez le message en cas de doute."
   },
   "admin": {
     "titre": "Administration",
@@ -406,7 +409,7 @@
       "autorite_provinciale": "Délégation provinciale",
       "ordre_medecins": "Ordre des médecins",
       "ordre_pharmaciens": "Ordre des pharmaciens",
-      "centre_numerique": "Centre de santé numérique"
+      "centre_numerique": "Programme national de santé numérique"
     },
     "kpi": {
       "ouvertes": "Demandes ouvertes",
@@ -481,7 +484,17 @@
       "ordre_medecins": "Valide, suspend ou refuse les médecins ; publie à leur intention.",
       "ordre_pharmaciens": "Valide, suspend ou refuse les pharmacies ; publie à leur intention.",
       "centre_numerique": "Attribue les rôles, règle la plateforme, lit le journal et la veille."
-    }
+    },
+    "statistiques": "Statistiques",
+    "deontologie": "Déontologie",
+    "diffusion": "Diffusion",
+    "demoTitre": "Démonstration",
+    "demoIntro": "Le jeu de démonstration (soignants, demandes, ordonnances, vaccinations… tous fictifs) est isolé : un soignant réel ne le voit jamais, et les statistiques l'excluent tant que l'interrupteur ci-dessous est éteint.",
+    "demoEffacee": "Démonstration effacée :",
+    "rattacherDemo": "Rattacher un compte à la démonstration",
+    "rattacherDemoAide": "Un compte rattaché ne voit que les demandes de démonstration et disparaît avec elle lors de l'effacement. Ne rattachez jamais un vrai soignant.",
+    "mettreDemo": "Passer en démo",
+    "sortirDemo": "Sortir de la démo"
   },
   "veille": {
     "fraicheurTitre": "Dernière demande reçue",
@@ -609,7 +622,9 @@
     "pompiers": "Pompiers",
     "ambulance": "Ambulance",
     "protection_civile": "Protection civile",
-    "autre": "Autre"
+    "autre": "Autre",
+    "aide_soignant": "Aide-soignant",
+    "pharmacien": "Pharmacien"
   },
   "centres": {
     "triPosition": "Les plus proches de votre position",
@@ -787,9 +802,9 @@
     "bienvenue": {
       "autorite_nationale": "Vue nationale : veille en temps réel, signalements communautaires à trier, campagnes et publications.",
       "autorite_provinciale": "Vue de votre province : veille, signalements, campagnes, agents à valider.",
-      "ordre_medecins": "Les médecins inscrits attendent votre décision. Chaque décision est journalisée.",
-      "ordre_pharmaciens": "Les pharmacies inscrites attendent votre décision. Chaque décision est journalisée.",
-      "centre_numerique": "Administration de la plateforme : rôles, réglages, journal, référentiel.",
+      "ordre_medecins": "Les médecins, infirmiers, sages-femmes et aides-soignants inscrits attendent votre décision ; le suivi déontologique montre leur activité en comptages. Chaque décision est journalisée.",
+      "ordre_pharmaciens": "Les pharmacies et pharmaciens inscrits attendent votre décision ; le suivi déontologique montre leur activité en comptages. Chaque décision est journalisée.",
+      "centre_numerique": "Programme national : statistiques du secteur et exports, diffusion de campagnes, référentiel des districts et formations, rôles et réglages.",
       "super_admin": "Vue complète.",
       "admin_ville": "",
       "admin_province": "",
@@ -885,5 +900,261 @@
     "santeImporter": "Importer les formations sanitaires dans la base",
     "santeImporterAide": "Copie la liste embarquée dans la base de données (quelques secondes). Réexécutable sans risque.",
     "santeCorrections": "Une formation manquante ou fermée ? Le ministère peut fournir une liste à jour : le fichier est remplacé en une opération."
+  },
+  "stats": {
+    "intro": {
+      "general": "Chiffres du secteur, calculés dans la base sur votre périmètre : uniquement des comptages et des médianes, jamais une fiche ni un patient.",
+      "ordre": "Statistiques agrégées de la plateforme sur votre périmètre : comptages et délais, aucune donnée individuelle de patient."
+    },
+    "demoIncluse": "Démonstration incluse dans ces chiffres",
+    "inclureDemo": "Inclure la démonstration",
+    "j365": "12 mois",
+    "resume": "Résumé",
+    "resumeIndisponible": "Résumé indisponible pour ce compte.",
+    "vuesPretes": "Vues prêtes",
+    "requete": "Requête libre",
+    "sourceTitre": "Données",
+    "mesureTitre": "Mesure",
+    "dim1": "Dimension",
+    "dim2": "Croiser avec",
+    "aucune": "Aucune",
+    "afficher": "Afficher",
+    "vide": "Aucune donnée",
+    "videDetail": "Rien sur cette période et ce périmètre. Élargissez la période ou changez de filtre.",
+    "median": "Médiane",
+    "delaiNote": "Délai médian, en minutes, entre l'envoi de la demande et la première prise en charge (en route, appel, WhatsApp ou résolu). Un simple « vu » ne compte pas.",
+    "confidentialite": "Comptages uniquement, calculés dans la base, bornés au périmètre du compte connecté.",
+    "langueExport": "Langue du document",
+    "rapportComplet": "Rapport complet (Word)",
+    "rapportTitre": "Rapport du secteur de la santé numérique",
+    "exportAide": "Excel : les tableaux. Word : les tableaux avec un texte d'analyse rédigé dans la langue choisie. Le rapport complet ajoute les vues prêtes.",
+    "exportIndisponible": "Export indisponible en mode démonstration locale.",
+    "autres": "Autres",
+    "inconnu": "Non renseigné",
+    "moinsUnAn": "Moins d'un an",
+    "ans": "ans",
+    "dose": "Dose",
+    "parNiveau": "Demandes par niveau d'urgence",
+    "parType": "Soignants inscrits par type",
+    "parStatut": "Demandes par statut",
+    "k": {
+      "demandes": "Demandes d'aide",
+      "vitales": "Urgences vitales",
+      "taux": "Taux de prise en charge",
+      "delai": "Délai médian de prise en charge",
+      "escaladees": "Escaladées",
+      "villes": "Villes actives",
+      "soignants": "Soignants inscrits",
+      "verifies": "Soignants vérifiés",
+      "actifs": "Soignants ayant répondu",
+      "ordonnances": "Ordonnances",
+      "servies": "Ordonnances servies",
+      "doses": "Doses de vaccin déclarées",
+      "evenements": "Signalements communautaires",
+      "confirmes": "Signalements confirmés",
+      "entraide": "Cas d'entraide"
+    },
+    "source": {
+      "demandes": "Demandes d'aide",
+      "reponses": "Réponses des soignants",
+      "professionnels": "Soignants et pharmacies",
+      "ordonnances": "Ordonnances",
+      "vaccins": "Vaccinations déclarées",
+      "evenements": "Signalements communautaires",
+      "entraide": "Entraide entre soignants"
+    },
+    "mesure": {
+      "nombre": "Nombre",
+      "delai_median": "Délai médian (min)"
+    },
+    "dim": {
+      "province": "Province",
+      "ville": "Ville",
+      "district": "District sanitaire",
+      "quartier": "Quartier",
+      "jour": "Jour",
+      "semaine": "Semaine",
+      "mois": "Mois",
+      "categorie": "Motif",
+      "niveau": "Niveau d'urgence",
+      "statut": "Statut",
+      "sexe": "Sexe",
+      "tranche_age": "Tranche d'âge",
+      "pour_qui": "Pour qui",
+      "escalade": "Escaladée",
+      "action": "Action",
+      "type_pro": "Type de soignant",
+      "type": "Type",
+      "en_ligne": "En ligne",
+      "diffusion": "Mode de diffusion",
+      "disponibilite": "Disponibilité (1re réponse)",
+      "vaccin": "Vaccin",
+      "dose": "Dose",
+      "a_l_heure": "À l'heure",
+      "urgence": "Urgence",
+      "specialite": "Spécialité"
+    },
+    "preset": {
+      "demandesProvince": "Demandes par province",
+      "motifsNiveau": "Motifs × niveau",
+      "delaiProvince": "Délai par province",
+      "sexeAge": "Âge × sexe",
+      "evolution": "Évolution hebdomadaire",
+      "quartiers": "Quartiers de N'Djamena",
+      "vaccins": "Vaccins × ponctualité",
+      "soignants": "Soignants par type",
+      "actions": "Actions des soignants",
+      "ordonnances": "Ordonnances : disponibilité",
+      "entraide": "Entraide par spécialité",
+      "evenements": "Signalements par type"
+    },
+    "forme": {
+      "auto": "Auto",
+      "barres": "Barres",
+      "courbe": "Courbe",
+      "empilees": "Empilées",
+      "camembert": "Camembert",
+      "tableau": "Tableau seul"
+    },
+    "action": {
+      "vu": "Vu",
+      "en_route": "En route",
+      "appelle": "Appel",
+      "whatsapp": "WhatsApp",
+      "indisponible": "Indisponible",
+      "resolu": "Résolu"
+    },
+    "diffusion": {
+      "diffusion": "Diffusée aux pharmacies",
+      "pharmacie_choisie": "Pharmacie choisie"
+    },
+    "disponibilite": {
+      "complete": "Complète",
+      "partielle": "Partielle",
+      "indisponible": "Indisponible",
+      "sans_reponse": "Sans réponse"
+    }
+  },
+  "deon": {
+    "titre": "Suivi déontologique",
+    "intro": {
+      "ordre_medecins": "Médecins, infirmiers, sages-femmes et aides-soignants inscrits : leur activité en comptages (réponses, prises en charge, délais, signalements), jamais le contenu des demandes. Les signaux à regarder sont indiqués ; chaque décision est journalisée.",
+      "ordre_pharmaciens": "Pharmacies et pharmaciens inscrits : leur activité en comptages (réponses, prises en charge, délais, signalements), jamais le contenu des demandes. Les signaux à regarder sont indiqués ; chaque décision est journalisée.",
+      "autre": "Activité des soignants inscrits, en comptages. Chaque décision est journalisée."
+    },
+    "k": {
+      "inscrits": "Inscrits",
+      "aSurveiller": "À regarder",
+      "delai": "Délai médian",
+      "suspendus": "Suspendus"
+    },
+    "col": {
+      "nom": "Nom",
+      "type": "Type",
+      "statut": "Statut",
+      "reponses": "Réponses",
+      "demandes": "Demandes distinctes",
+      "prises": "Prises en charge",
+      "delai": "Délai médian (min)",
+      "signalements": "Signalements ouverts",
+      "signaux": "Signaux"
+    },
+    "signal": {
+      "signale": "Signalement ouvert",
+      "suspendu": "Suspendu",
+      "lent": "Délai élevé",
+      "inactif": "Sans réponse sur la période",
+      "expire": "Vérification qui expire"
+    },
+    "signalDetail": {
+      "signale": "Un signalement de patient ou de confrère est en attente de traitement.",
+      "suspendu": "Compte suspendu : il ne reçoit plus de demandes.",
+      "lent": "Délai médian de prise en charge supérieur à 45 minutes.",
+      "inactif": "Inscrit mais aucune réponse sur la période choisie.",
+      "expire": "La vérification provisoire expire dans moins de 7 jours."
+    },
+    "tousSignaux": "Tous les signaux",
+    "tri": {
+      "reponses": "Trier : réponses",
+      "delai": "Trier : délai",
+      "signalements": "Trier : signalements",
+      "nom": "Trier : nom",
+      "inscription": "Trier : inscription"
+    },
+    "vide": "Aucun soignant ne correspond.",
+    "derniereActivite": "dernière activité",
+    "signalements": "Signalements",
+    "aucunSignalement": "Aucun signalement.",
+    "confidentialite": "Cet écran ne montre jamais une demande ni un patient : uniquement des comptages par soignant, calculés dans la base."
+  },
+  "ref": {
+    "titre": "Circonscriptions et formations sanitaires",
+    "intro": "Créez ou corrigez les districts sanitaires, les formations (centres de santé, hôpitaux) et le rattachement des villes à leur district. Chaque modification est journalisée.",
+    "districts": "Districts",
+    "formations": "Formations",
+    "villes": "Villes → district",
+    "nouveauDistrict": "Nouveau district",
+    "nomDistrict": "Nom du district",
+    "pcode": "Code (P-code)",
+    "pcodeAide": "Facultatif : code officiel OCHA/MSP.",
+    "journal": "Modification journalisée.",
+    "choisirDistrict": "Choisir un district",
+    "nouvelleFormation": "Nouvelle formation sanitaire",
+    "aucuneFormation": "Aucune formation affichée",
+    "aucuneFormationDetail": "Choisissez un district ou tapez au moins deux lettres du nom.",
+    "nonFonctionnelle": "non fonctionnelle",
+    "nomFormation": "Nom",
+    "typeFormation": "Type",
+    "affiliation": "Affiliation",
+    "district": "District sanitaire",
+    "fonctionnelle": "Fonctionnelle",
+    "typeFs": {
+      "CS": "Centre de santé",
+      "HD": "Hôpital de district",
+      "HP": "Hôpital provincial",
+      "HR": "Hôpital régional",
+      "HN": "Hôpital national",
+      "CL": "Clinique",
+      "PS": "Poste de santé",
+      "AUTRE": "Autre"
+    },
+    "affil": {
+      "PUB": "Public",
+      "PRIV": "Privé",
+      "CONF": "Confessionnel",
+      "ONG": "ONG",
+      "MIL": "Militaire"
+    },
+    "villesIntro": "Le district d'une ville relie les demandes d'aide aux statistiques par district.",
+    "rattacher": "Rattacher la ville à ce district",
+    "villesNote": "Le changement est pris en compte dans les statistiques et dans le référentiel servi à l'application (quelques minutes de cache)."
+  },
+  "diff": {
+    "intro": "Préparez un message de prévention à partir d'un modèle, choisissez les soignants destinataires, puis envoyez-le par WhatsApp et publiez-le dans l'application. Les contacts sont ceux des soignants inscrits ; aucun numéro de patient ne sort jamais.",
+    "modeles": "Modèles",
+    "modele": {
+      "dengue": "Dengue",
+      "paludisme": "Paludisme",
+      "cholera": "Choléra",
+      "rougeole": "Rougeole",
+      "meningite": "Méningite",
+      "chaleur": "Fortes chaleurs",
+      "inondations": "Inondations",
+      "campagne": "Campagne de vaccination"
+    },
+    "message": "Message",
+    "messageAide": "Modifiable librement. Court : c'est un message WhatsApp.",
+    "ajouterArabe": "Ajouter la version arabe",
+    "destinataires": "Destinataires",
+    "destinatairesAide": "Types de soignants inscrits à joindre.",
+    "publierAussi": "Publier aussi dans l'application",
+    "preparer": "Préparer la diffusion",
+    "publiee": "Publication créée dans l'application.",
+    "listePrete": "{n} contact(s) prêt(s)",
+    "aucunContact": "Aucun soignant inscrit ne correspond.",
+    "copierMessage": "Copier le message",
+    "telechargerContacts": "Contacts (CSV)",
+    "whatsappAide": "Petite liste : ouvrez WhatsApp contact par contact. Grande liste : téléchargez les contacts et créez une liste de diffusion dans WhatsApp Business.",
+    "journal": "Chaque export de contacts est inscrit au journal."
   }
 }

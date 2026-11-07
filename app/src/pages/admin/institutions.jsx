@@ -23,6 +23,7 @@ import { ilYA, dateCourte, joursRestants, versCSV, telechargerTexte } from '../.
 import { naviguer } from '../../lib/router'
 import { Bouton, Champ, Selecteur, Alerte, Chargement, Vide, Modale, Case } from '../../components/base'
 import { BadgePro } from '../../components/pro'
+import SectionReferentiel from './referentiel'
 
 function useAction() {
   const { t } = useLangue()
@@ -63,8 +64,14 @@ export function TableauInstitution({ session }) {
         {['autorite_nationale', 'autorite_provinciale', 'super_admin'].includes(role) && (
           <K v={s.campagnes_actives} l={t('inst.kpi.campagnes')} vers="/campagnes" />)}
         <K v={s.publications} l={t('inst.kpi.publications')} vers="/publications" />
-        <K v={s.cas_ouverts} l={t('inst.kpi.casOuverts')} vers="/veille" />
-        <K v={s.doses_declarees_30j} l={t('inst.kpi.doses')} vers="/veille" />
+        <K v={s.cas_ouverts} l={t('inst.kpi.casOuverts')} vers="/statistiques" />
+        <K v={s.doses_declarees_30j} l={t('inst.kpi.doses')} vers="/statistiques" />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Bouton variante="secondaire" onClick={() => naviguer(base + '/statistiques')}>📊 {t('admin.statistiques')}</Bouton>
+        {['ordre_medecins', 'ordre_pharmaciens', 'super_admin'].includes(role)
+          ? <Bouton variante="secondaire" onClick={() => naviguer(base + '/deontologie')}>⚖️ {t('admin.deontologie')}</Bouton>
+          : <Bouton variante="secondaire" onClick={() => naviguer(base + '/diffusion')}>📣 {t('admin.diffusion')}</Bouton>}
       </div>
       <p className="aide mt-4">{t('inst.journalNote')}</p>
     </div>
@@ -452,6 +459,7 @@ export function SectionSante({ session }) {
         </div>
       )}
       <p className="aide mt-3">{t('inst.santeCorrections')}</p>
+      {['super_admin', 'autorite_nationale', 'centre_numerique'].includes(session.profil.role) && <SectionReferentiel />}
     </div>
   )
 }

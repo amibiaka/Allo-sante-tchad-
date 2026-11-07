@@ -84,3 +84,18 @@ export function useLangue() {
 }
 
 export function useT() { return useLangue().t }
+
+/* Un traducteur pour une autre langue que celle de l'ecran : sert aux
+   documents exportes (un rapport en arabe depuis une interface en
+   francais). Meme repli sur le francais que t(). */
+export function traducteur(langue) {
+  const dico = DICOS[langue] || DICOS.fr
+  return (chemin, vars) => {
+    let v = resoudre(dico, chemin)
+    if (v === undefined) v = resoudre(DICOS.fr, chemin)
+    if (v === undefined) return chemin
+    if (typeof v !== 'string') return v
+    if (vars) for (const [k, val] of Object.entries(vars)) v = v.replaceAll(`{${k}}`, val)
+    return v
+  }
+}

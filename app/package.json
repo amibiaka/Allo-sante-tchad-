@@ -1,7 +1,7 @@
 {
   "name": "afiya",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "description": "Afiya - plateforme de sante du Tchad : urgences, soignants proches, ordonnances, vaccination, veille sanitaire (PWA bas debit, FR/EN/AR)",
   "license": "MIT",

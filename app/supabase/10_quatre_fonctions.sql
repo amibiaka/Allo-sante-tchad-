@@ -66,7 +66,7 @@ begin
   if v_ville is null then raise exception 'ville inconnue'; end if;
   perform public.limiter('donneur_tel:' || v_tel, 3);
   perform public.limiter('donneur_ville:' || v_ville::text, 200);
-  v_code := upper(substr(translate(encode(gen_random_bytes(3), 'hex'), '0o1il', 'XYZWV'), 1, 2));
+  v_code := upper(substr(translate(replace(gen_random_uuid()::text, '-', ''), '0o1il', 'XYZWV'), 1, 2));
   insert into donneurs_sang (telephone, nom, groupe, ville_id, province_id, quartier_id, code, consentement, actif)
   values (v_tel, left(p_nom, 80), p_groupe::groupe_sanguin, v_ville, v_prov, p_quartier_id, v_code, true, true)
   on conflict (telephone) do update

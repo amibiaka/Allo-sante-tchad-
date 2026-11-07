@@ -23,4 +23,7 @@ alter type role_utilisateur add value if not exists 'ordre_medecins';
 alter type role_utilisateur add value if not exists 'ordre_pharmaciens';
 alter type role_utilisateur add value if not exists 'centre_numerique';
 
-select unnest(enum_range(null::role_utilisateur)) as roles;
+-- Pas de requete de controle ici : l'editeur SQL de Supabase execute tout
+-- le fichier dans une seule transaction, et PostgreSQL refuse de lire une
+-- valeur d'enum dans la transaction qui l'a creee (erreur 55P04). Pour
+-- verifier, executer a part :  select unnest(enum_range(null::role_utilisateur));

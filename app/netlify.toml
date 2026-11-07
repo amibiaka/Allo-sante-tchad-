@@ -12,6 +12,19 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Fonctions de l'espace de gestion (export Excel/Word, transcription
+# vocale) : declarees avant le repli vers index.html, qui sinon les
+# avalerait. Chaque fonction declare aussi son chemin dans son fichier.
+[[redirects]]
+  from = "/api/export"
+  to = "/.netlify/functions/export"
+  status = 200
+
+[[redirects]]
+  from = "/api/voix"
+  to = "/.netlify/functions/voix"
+  status = 200
+
 # Application monopage : toute URL renvoie vers index.html.
 # (Le routeur interne utilise des ancres #/ donc ceci est une simple
 #  ceinture de securite.)
@@ -77,6 +90,11 @@
 # Purge des photos d'ordonnance et messages vocaux : chaque nuit a 02h00 UTC.
 [functions."purge-medias"]
   schedule = "0 2 * * *"
+
+# Transcription des messages vocaux recents : toutes les 10 minutes
+# (ne fait rien tant que OPENAI_API_KEY n'est pas renseignee).
+[functions."voix-planifiee"]
+  schedule = "*/10 * * * *"
 
 # Le manifeste doit etre servi comme du JSON. Netlify le renvoyait en
 # application/octet-stream, ce que certains navigateurs refusent au
