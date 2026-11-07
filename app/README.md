@@ -66,6 +66,7 @@ de ces fichiers **l'un après l'autre**, en cliquant sur **Run** à chaque fois 
 | 10 | `supabase/13_pilote_operationnel.sql` | Phase pilote : prolonge les inscriptions en cours |
 | 11 | `supabase/14a_types_soignants.sql` **seul**, puis `14_gestion_et_statistiques.sql` | Espace de gestion : droits des Ordres et du programme national, démonstration isolée, statistiques (résumé, requête libre, suivi des soignants, contacts de diffusion), transcription vocale |
 | 12 | `supabase/15_jeu_demonstration.sql` | *Facultatif, pour une présentation* — ~1 600 lignes fictives (61 soignants, 320 demandes, ordonnances, vaccinations, entraide…) isolées et effaçables en un clic |
+| 13 | `supabase/16_comptes_de_gestion.sql` | Comptes de gestion par adresse e-mail (adresse sur le profil) ; la création se fait ensuite depuis l'écran Équipe |
 
 Les autres fichiers du dossier servent plus tard : `04_effacer_demo.sql` (avant
 la mise en service réelle), `05_creer_administrateur.sql` (étape 5 ci-dessous)
@@ -101,6 +102,15 @@ Puis **Deploys → Trigger deploy → Deploy site**.
 
 Ouvrez `supabase/05_creer_administrateur.sql` : il contient le mode d'emploi
 détaillé (créer l'utilisateur, coller son identifiant, lancer une requête).
+Ce premier compte est le **super-administrateur**. Tous les autres comptes de
+gestion (programme national, Ordres, autorités, administrateurs de province
+ou de ville) se créent ensuite **depuis le back-office, écran Équipe** : vous
+saisissez l'adresse e-mail et le rôle ; la personne reçoit une invitation par
+e-mail (ou un lien à lui transmettre, ou un mot de passe provisoire), ouvre
+la page `#/acces`, choisit son mot de passe et se connecte avec son adresse.
+Pour envoyer plus de quelques e-mails par heure, configurez un serveur SMTP
+dans Supabase (Authentication → Emails → SMTP Settings) ; sans cela, le mode
+« lien à transmettre » fonctionne toujours.
 
 Puis lancez `supabase/06_verification.sql` : il vérifie en une requête que les
 23 provinces sont chargées, que la sécurité est bien active, que le numéro des
@@ -375,9 +385,10 @@ src/
   i18n/             fr, en, ar, ar-td (1 012 clés, parité fr/en/ar vérifiée)
   data/             geo.json (23 provinces), urgences.json, demo.json,
                     sante.json (1 985 formations sanitaires), vaccins.json (calendrier PEV)
-supabase/           SQL à coller dans l'ordre (01 à 15, voir le tableau plus haut)
+supabase/           SQL à coller dans l'ordre (01 à 16, voir le tableau plus haut)
 netlify/functions/  escalade des urgences (5 min), purge des médias (nuit),
-                    export Excel/Word (/api/export), transcription vocale (/api/voix + toutes les 10 min) ;
+                    export Excel/Word (/api/export), transcription vocale (/api/voix + toutes les 10 min),
+                    comptes de gestion par e-mail (/api/comptes) ;
                     lib/ : zip, xlsx, docx écrits à la main (aucune dépendance), appel à Claude
 netlify/edge-functions/  référentiel géographique servi par le CDN
 android/            configuration de l'application Android (Trusted Web Activity)
