@@ -346,8 +346,9 @@ begin
               least(cree + make_interval(mins => 5 + floor(random() * 115)::int), now()));
       if dispo = 'complete' then a_complete := true; end if;
       if prix is not null then
-        insert into releves_prix (pharmacie_id, ordonnance_id, ville_id, medicament, prix_fcfa, conditionnement, created_at)
-        values (phs[k], o_id, v.id, medoc_cle[m], prix, 'ordonnance', least(cree + make_interval(mins => 6 + floor(random() * 115)::int), now()));
+        insert into releves_prix (pharmacie_id, ordonnance_id, ville_id, medicament, medicament_cle, prix_fcfa, disponible, created_at)
+        values (phs[k], o_id, v.id, medoc_cle[m], lower(regexp_replace(public.unaccent_immuable(medoc_cle[m]), '\s+', ' ', 'g')), prix, true,
+                least(cree + make_interval(mins => 6 + floor(random() * 115)::int), now()));
       end if;
     end loop;
     update ordonnances set statut = case
@@ -362,12 +363,11 @@ begin
   for ph in select p.id from professionnels p where p.demo and p.type::text = 'pharmacie' and p.ville_id in (select id from villes where code in ('NDJ-NDJ','LOC-MDU')) loop
     select ville_id into v.id from professionnels where id = ph;
     for k in 1..12 loop
-      insert into releves_prix (pharmacie_id, ville_id, medicament, prix_fcfa, conditionnement, created_at)
-      values (ph, v.id,
-              (array['Paracétamol 500 mg', 'Amoxicilline 500 mg', 'Artéméther-luméfantrine adulte', 'SRO sachet', 'Zinc 20 mg', 'Métronidazole 500 mg', 'Ibuprofène 400 mg', 'Oméprazole 20 mg', 'Fer acide folique', 'Amlodipine 10 mg', 'Insuline rapide', 'Ceftriaxone 1 g injectable'])[k],
-              round((array[325, 2000, 3500, 225, 700, 800, 700, 2200, 1500, 3000, 7000, 1800])[k] * (0.85 + random() * 0.3) / 25) * 25,
-              (array['plaquette de 10', 'boîte de 12', 'cure adulte', 'sachet', 'plaquette de 10', 'plaquette de 10', 'plaquette de 10', 'boîte de 14', 'boîte de 30', 'boîte de 30', 'flacon', 'flacon'])[k],
-              now() - make_interval(mins => floor(random() * 45 * 1440)::int));
+      insert into releves_prix (pharmacie_id, ville_id, medicament, medicament_cle, prix_fcfa, disponible, created_at)
+      select ph, v.id, nom_m, lower(regexp_replace(public.unaccent_immuable(nom_m), '\s+', ' ', 'g')),
+             round((array[325, 2000, 3500, 225, 700, 800, 700, 2200, 1500, 3000, 7000, 1800])[k] * (0.85 + random() * 0.3) / 25) * 25,
+             random() < 0.92, now() - make_interval(mins => floor(random() * 45 * 1440)::int)
+        from (select (array['Paracétamol 500 mg', 'Amoxicilline 500 mg', 'Artéméther-luméfantrine adulte', 'SRO sachet', 'Zinc 20 mg', 'Métronidazole 500 mg', 'Ibuprofène 400 mg', 'Oméprazole 20 mg', 'Fer acide folique', 'Amlodipine 10 mg', 'Insuline rapide', 'Ceftriaxone 1 g injectable'])[k] as nom_m) x;
     end loop;
   end loop;
 end $$;
