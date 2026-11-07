@@ -140,8 +140,8 @@ $$;
 
 -- ---------------------------------------------------------------------
 --  4. RELEVES DE PRIX DES MEDICAMENTS
---  medicament_cle est rempli par l'appelant (minuscules, sans accents,
---  espaces simples) : pas de colonne generee.
+--  medicament_cle (minuscules, sans accents, espaces simples) est une
+--  colonne generee : on ne l'ecrit jamais.
 -- ---------------------------------------------------------------------
 create table if not exists releves_prix (
   id             uuid primary key default gen_random_uuid(),
@@ -149,7 +149,7 @@ create table if not exists releves_prix (
   pharmacie_id   uuid not null references professionnels(id),
   ville_id       int references villes(id),
   medicament     text not null,
-  medicament_cle text,
+  medicament_cle text generated always as (lower(regexp_replace(public.unaccent_immuable(medicament), '\s+', ' ', 'g'))) stored,
   prix_fcfa      int,
   disponible     boolean,
   created_at     timestamptz not null default now()
