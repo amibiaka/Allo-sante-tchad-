@@ -93,9 +93,9 @@ Dans Netlify : **Site configuration → Environment variables → Add a variable
 | `SUPABASE_URL` | la même URL qu'en haut (pour les tâches automatiques) |
 | `SUPABASE_ANON_KEY` | la même clé publique `anon` (pour les fonctions d'export et de voix) |
 | `SUPABASE_SERVICE_ROLE_KEY` | la clé secrète `service_role` — **ne la mettez jamais ailleurs** |
-| `ANTHROPIC_API_KEY` | *facultatif* — clé de l'API Claude (console.anthropic.com, paiement à l'usage) : rédige le texte des rapports Word en français, anglais ou arabe et structure les messages vocaux. Sans elle, le rapport sort avec un texte composé à partir des chiffres. |
+| `ANTHROPIC_API_KEY` (ou `ANTHROPIC_KEY`) | *facultatif* — clé de l'API Claude (console.anthropic.com, paiement à l'usage) : rédige le texte des rapports Word en français, anglais ou arabe et structure les messages vocaux. Sans elle, le rapport sort avec un texte composé à partir des chiffres. |
 | `ANTHROPIC_MODEL` | *facultatif* — le modèle Claude à utiliser (sinon `claude-sonnet-4-5`, puis repli automatique) |
-| `OPENAI_API_KEY` | *facultatif* — clé OpenAI (paiement à l'usage) pour la transcription des messages vocaux (Whisper, français et arabe). Sans elle, les vocaux restent à écouter. |
+| `OPENAI_API_KEY` (ou `OPENAI_KEY`) | *facultatif* — clé OpenAI (paiement à l'usage) pour la transcription des messages vocaux (Whisper, français et arabe). Sans elle, les vocaux restent à écouter. |
 
 Puis **Deploys → Trigger deploy → Deploy site**.
 

@@ -7,9 +7,11 @@ export function config() {
     url,
     anon: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '',
     service: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-    anthropic: process.env.ANTHROPIC_API_KEY || '',
+    // Les deux noms sont acceptes : ANTHROPIC_API_KEY (documente) ou
+    // ANTHROPIC_KEY, OPENAI_API_KEY ou OPENAI_KEY (saisis a la main).
+    anthropic: process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY || '',
     modele: process.env.ANTHROPIC_MODEL || '',
-    openai: process.env.OPENAI_API_KEY || '',
+    openai: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '',
   }
 }
 
