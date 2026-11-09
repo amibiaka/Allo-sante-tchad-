@@ -132,6 +132,8 @@ function graine() {
     { id: uid(), telephone: '66000001', motDePasse: 'demo1234', role: 'pro', nom: 'Dr Démo Soignant', province_id: ndj.province_id, ville_id: ndj.id, actif: true },
     { id: uid(), telephone: '66000002', motDePasse: 'demo1234', role: 'admin_ville', nom: 'Admin ville N\'Djamena (DÉMO)', province_id: ndj.province_id, ville_id: ndj.id, actif: true },
     { id: uid(), telephone: '66000003', motDePasse: 'demo1234', role: 'pro', nom: 'Pharmacie Démo', province_id: ndj.province_id, ville_id: ndj.id, actif: true },
+    { id: uid(), telephone: '66000004', motDePasse: 'demo1234', role: 'ordre_medecins', nom: 'Ordre des médecins (DÉMO)', province_id: null, ville_id: null, actif: true },
+    { id: uid(), telephone: '66000005', motDePasse: 'demo1234', role: 'centre_numerique', nom: 'Programme santé numérique (DÉMO)', province_id: null, ville_id: null, actif: true },
   ]
   // On rattache un vrai profil professionnel aux comptes de demo.
   const proSoignant = {
@@ -190,6 +192,14 @@ function charger() {
     const brut = localStorage.getItem(CLE)
     DB = brut ? JSON.parse(brut) : graine()
   } catch { DB = graine() }
+  // Comptes de demonstration ajoutes apres coup (Ordre, programme) : on
+  // complete une base deja enregistree sans l'effacer.
+  if (Array.isArray(DB.comptes) && !DB.comptes.some((c) => c.telephone === '66000004')) {
+    DB.comptes.push(
+      { id: uid(), telephone: '66000004', motDePasse: 'demo1234', role: 'ordre_medecins', nom: 'Ordre des médecins (DÉMO)', province_id: null, ville_id: null, actif: true },
+      { id: uid(), telephone: '66000005', motDePasse: 'demo1234', role: 'centre_numerique', nom: 'Programme santé numérique (DÉMO)', province_id: null, ville_id: null, actif: true },
+    )
+  }
   return DB
 }
 function sauver() {
@@ -963,18 +973,20 @@ const habillerCasLocal = (c) => {
   const a = charger().pros.find((p) => p.id === c.auteur_pro)
   return { ...c, auteur_nom: a?.nom ?? null, auteur_type: a?.type ?? null, ville_nom: nomVilleLocale(c.ville_id), province_nom: nomProvinceLocale(c.province_id) }
 }
-export async function casEntraide({ statut, miens = false, limite = 50 } = {}) {
+export async function casEntraide({ statut, miens = false, genre, recherche, limite = 50 } = {}) {
   const s = await sessionCourante()
   let l = coffre('cas')
   if (statut === 'actifs') l = l.filter((c) => c.statut !== 'clos'); else if (statut) l = l.filter((c) => c.statut === statut)
+  if (genre) l = l.filter((c) => (genre === 'question' ? (c.genre || 'question') === 'question' : (c.genre || 'question') !== 'question'))
+  if (recherche && recherche.trim().length >= 2) { const m = recherche.trim().toLowerCase(); l = l.filter((c) => (c.titre + ' ' + c.description).toLowerCase().includes(m)) }
   if (miens) l = l.filter((c) => c.auteur_pro === s?.pro?.id)
   return l.sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, limite).map(habillerCasLocal)
 }
-export async function creerCas({ specialite, urgence, titre, description, whatsappOk }) {
+export async function creerCas({ specialite, urgence, titre, description, whatsappOk, genre = 'question' }) {
   const s = await sessionCourante(); if (!s?.pro) throw new Error('PAS_DE_FICHE')
   if (/\d{6,}/.test(titre) || /\d{8,}/.test(description)) throw new Error('IDENTIFIANT_INTERDIT')
-  const c = { id: uid(), code: 'E-' + Math.random().toString(36).slice(2, 6).toUpperCase(), auteur_pro: s.pro.id, ville_id: s.pro.ville_id,
-    province_id: s.pro.province_id, specialite: specialite || null, urgence: Number(urgence) || 2, titre, description,
+  const c = { id: uid(), code: 'E-' + Math.random().toString(36).slice(2, 6).toUpperCase(), auteur_pro: s.pro.id, ville_id: s.pro.ville_id, genre,
+    province_id: s.pro.province_id, specialite: specialite || null, urgence: genre === 'question' ? (Number(urgence) || 2) : 3, titre, description,
     whatsapp_ok: !!whatsappOk, statut: 'ouvert', nb_reponses: 0, created_at: maintenant(), updated_at: maintenant() }
   coffre('cas').push(c); sauver(); return habillerCasLocal(c)
 }
@@ -1237,6 +1249,48 @@ export async function enregistrerFormation(f) {
   sauver(); return e || l[l.length - 1]
 }
 export async function majVilleDistrict() { return true }
+
+/* --- Territoire et pilotage (mode local : simulation en memoire) ------ */
+export async function adminProvinces() {
+  return REF.provinces.map((p) => ({ ...p, ordre: p.ordre ?? 100, nb_villes: REF.villes.filter((v) => v.province_id === p.id).length }))
+}
+export async function adminVilles() { return REF.villes }
+export async function enregistrerProvince({ id, code, nom, nomAr, ordre }) {
+  const corps = { code: String(code || '').trim().toUpperCase(), nom_fr: String(nom || '').trim(), nom_ar: nomAr?.trim() || null, ordre: ordre === '' || ordre == null ? 100 : Number(ordre) }
+  if (id) { const p = REF.provinces.find((x) => x.id === Number(id)); if (!p) throw new Error('HORS_PERIMETRE'); Object.assign(p, corps); return p }
+  const p = { id: Math.max(0, ...REF.provinces.map((x) => x.id)) + 1, ...corps }
+  REF.provinces.push(p); return p
+}
+export async function enregistrerVille({ id, provinceCode, nom, nomAr, lat, lng, chefLieu, districtId }) {
+  const p = provinceLocale(provinceCode); if (!p) throw new Error('REFERENTIEL_INDISPONIBLE')
+  const nombre = (x) => (x === '' || x == null ? null : Number(x))
+  const corps = { province_id: p.id, nom_fr: String(nom || '').trim(), nom_ar: nomAr?.trim() || null, lat: nombre(lat), lng: nombre(lng), chef_lieu: !!chefLieu, district_id: districtId ? Number(districtId) : null }
+  if (id) { const v = REF.villes.find((x) => x.id === Number(id)); if (!v) throw new Error('HORS_PERIMETRE'); Object.assign(v, corps); return v }
+  const v = { id: Math.max(0, ...REF.villes.map((x) => x.id)) + 1, code: `${p.code}-${corps.nom_fr.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4)}${Date.now().toString().slice(-3)}`, ...corps }
+  REF.villes.push(v); return v
+}
+export async function pilotageResume() {
+  const s = await sessionCourante(); const db = charger(); const auj = maintenant().slice(0, 10)
+  const cas = coffre('cas')
+  return {
+    comptes_gestion: (db.profils || []).filter((p) => p.role !== 'pro' && p.actif !== false).length,
+    comptes_inactifs: (db.profils || []).filter((p) => p.role !== 'pro' && p.actif === false).length,
+    provinces: REF.provinces.length, villes: REF.villes.length,
+    quartiers_attente: REF.quartiers.filter((q) => q.approuve === false).length,
+    districts: coffre('districts').length, formations: coffre('formations').length,
+    a_valider: db.pros.filter((p) => p.statut === 'provisoire' && peutValiderLocal(s?.profil, p)).length,
+    soignants_verifies: db.pros.filter((p) => p.statut === 'verifie').length,
+    campagnes_actives: coffre('campagnes').filter((c) => c.statut === 'publiee' && c.fin >= auj).length,
+    campagnes_brouillons: coffre('campagnes').filter((c) => c.statut === 'brouillon').length,
+    publications: coffre('publications').filter((p) => p.publie).length,
+    cas_ouverts: cas.filter((c) => c.statut === 'ouvert' && (c.genre || 'question') === 'question').length,
+    partages: cas.filter((c) => (c.genre || 'question') !== 'question').length,
+    evenements_nouveaux: coffre('evenements').filter((e) => e.statut === 'nouveau').length,
+    signalements_ouverts: (db.signalements || []).filter((x) => x.statut === 'ouvert').length,
+    demandes_7j: db.demandes.filter((d) => d.created_at > new Date(Date.now() - 7 * 864e5).toISOString()).length,
+    journal_7j: (db.journal || []).length,
+  }
+}
 export async function exporterFichier() { throw new Error('EXPORT_INDISPONIBLE_DEMO') }
 export async function transcrireDemande() { throw new Error('VOIX_INDISPONIBLE_DEMO') }
 export async function ouvrirSessionDepuisLien() { return null }

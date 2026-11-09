@@ -58,7 +58,7 @@ export default function SectionReferentiel() {
   )
 }
 
-function Districts({ geo, nom, t, districts, lancer, recharger }) {
+export function Districts({ geo, nom, t, districts, lancer, recharger }) {
   const [province, setProvince] = useState('')
   const [edition, setEdition] = useState(null)
   const liste = useMemo(() => districts.filter((d) => !province || d.province_code === province).sort((a, b) => a.nom.localeCompare(b.nom)), [districts, province])
@@ -97,7 +97,7 @@ function Districts({ geo, nom, t, districts, lancer, recharger }) {
   )
 }
 
-function Formations({ geo, nom, t, districts, lancer }) {
+export function Formations({ geo, nom, t, districts, lancer }) {
   const [district, setDistrict] = useState('')
   const [recherche, setRecherche] = useState('')
   const [liste, setListe] = useState(null)
@@ -159,6 +159,10 @@ function Formations({ geo, nom, t, districts, lancer }) {
       </Modale>
     </div>
   )
+}
+
+export function RattachementVilles({ geo, nom, t, districts, lancer }) {
+  return <Villes geo={geo} nom={nom} t={t} districts={districts} lancer={lancer} />
 }
 
 function Villes({ geo, nom, t, districts, lancer }) {

@@ -62,6 +62,8 @@ const NOMS = [
   'adminDistricts', 'enregistrerDistrict', 'adminFormations', 'enregistrerFormation', 'majVilleDistrict',
   'exporterFichier', 'transcrireDemande',
   'ouvrirSessionDepuisLien', 'definirMotDePasse', 'comptesGestion',
+  // Pilotage etendu (novembre 2026)
+  'adminProvinces', 'adminVilles', 'enregistrerProvince', 'enregistrerVille', 'pilotageResume',
 ]
 
 export const db = Object.fromEntries(NOMS.map((n) => [n, appel(n)]))

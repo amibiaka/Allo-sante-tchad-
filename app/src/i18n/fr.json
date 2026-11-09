@@ -42,7 +42,8 @@
     "jours": "jours",
     "de": "de",
     "erreurReseau": "Action impossible pour le moment. Vérifiez votre connexion.",
-    "accueil": "Accueil"
+    "accueil": "Accueil",
+    "donneesHorsLigne": "Sans réseau : voici les dernières informations enregistrées sur ce téléphone (le {date})."
   },
   "accueil": {
     "aide": "J'ai besoin d'aide",
@@ -392,7 +393,7 @@
     "tableau": "Tableau de bord",
     "demandes": "Demandes",
     "soignants": "Soignants",
-    "geographie": "Géographie",
+    "geographie": "Quartiers",
     "moderation": "Modération",
     "numeros": "Numéros d'urgence",
     "equipe": "Équipe",
@@ -496,7 +497,8 @@
     "mettreDemo": "Passer en démo",
     "sortirDemo": "Sortir de la démo",
     "identifiant": "Téléphone ou adresse e-mail",
-    "identifiantAide": "Numéro à 8 chiffres pour les comptes ouverts par téléphone, adresse e-mail pour les comptes de gestion."
+    "identifiantAide": "Numéro à 8 chiffres pour les comptes ouverts par téléphone, adresse e-mail pour les comptes de gestion.",
+    "territoire": "Territoire"
   },
   "veille": {
     "fraicheurTitre": "Dernière demande reçue",
@@ -798,7 +800,35 @@
     "clore": "Clore",
     "casClos": "Demande close.",
     "messageWhatsapp": "Bonjour, je vous réponds depuis Afiya au sujet de votre demande {code} : {titre}",
-    "contactIndisponible": "Le contact n'est pas disponible pour cette demande."
+    "contactIndisponible": "Le contact n'est pas disponible pour cette demande.",
+    "ongletQuestions": "Questions",
+    "ongletSavoir": "Partages et protocoles",
+    "introSavoir": "La mémoire collective des soignants du Tchad : retours d'expérience, conduites à tenir, organisations qui marchent. Tout soignant actif peut publier et commenter. Les fils restent lisibles et se retrouvent par la recherche.",
+    "partager": "Partager une expérience ou un protocole",
+    "rechercher": "Rechercher dans les fils (mot, symptôme, lieu…)",
+    "recents": "Récents",
+    "aucunSavoir": "Aucun partage pour le moment",
+    "aucunSavoirDetail": "Soyez le premier : ce que vous avez appris sur le terrain peut aider un collègue à l'autre bout du pays.",
+    "genreTitre": "Que publiez-vous ?",
+    "genre": {
+      "question": "Une question",
+      "partage": "Un partage d'expérience",
+      "protocole": "Un protocole / une conduite à tenir"
+    },
+    "genreDetail": {
+      "question": "Vous demandez conseil à un médecin.",
+      "partage": "Vous racontez ce qui a marché, ou pas, et ce que vous en retenez.",
+      "protocole": "Une marche à suivre claire, étape par étape, que d'autres pourront appliquer."
+    },
+    "titreSavoir": "Titre",
+    "titreSavoirExemple": "Ex. : Prise en charge du paludisme grave sans artésunate injectable",
+    "descriptionSavoir": "Contenu",
+    "descriptionSavoirAide": "Contexte, ce que vous avez fait, résultat, ce que vous conseillez. Jamais de nom de patient ni de numéro.",
+    "commentaires": "Commentaires",
+    "pasEncoreCommentaire": "Pas encore de commentaire.",
+    "commentairePlaceholder": "Votre commentaire, votre expérience, une précision…",
+    "commenter": "Commenter",
+    "publierSavoir": "Publier"
   },
   "inst": {
     "bienvenue": {
@@ -818,7 +848,8 @@
       "campagnes": "campagnes en cours",
       "publications": "publications en ligne",
       "casOuverts": "demandes d'entraide ouvertes",
-      "doses": "doses déclarées (30 j)"
+      "doses": "doses déclarées (30 j)",
+      "titre": "Aujourd'hui dans votre périmètre"
     },
     "journalNote": "Chaque décision prise ici (validation, publication, tri d’un signalement, attribution d’un rôle) est inscrite au journal, avec son auteur et sa date.",
     "validationsIntro": "Vous ne voyez que les inscriptions que votre institution peut valider. Vérifier rend le badge « Vérifié » visible du public ; prolonger redonne 45 jours.",
@@ -1212,5 +1243,60 @@
     "ouvrirGestion": "Ouvrir l'espace de gestion",
     "ouvrirPro": "Ouvrir l'espace soignant",
     "cleAdminNote": "L'espace de gestion demande aussi la clé d'accès du site, que l'administrateur vous communique."
+  },
+  "voix": {
+    "lire": "Lire la page à voix haute",
+    "arreter": "Arrêter la lecture"
+  },
+  "pilotage": {
+    "groupe": {
+      "comptes": "Comptes et accès",
+      "soignants": "Soignants",
+      "communication": "Communication",
+      "territoire": "Territoire",
+      "donnees": "Données et veille"
+    },
+    "comptesGestion": "Comptes de gestion",
+    "comptesAide": "Programme, Ordres, autorités, administrateurs",
+    "inactifs": "{n} désactivé(s)",
+    "nouveauCompte": "Créer un compte de gestion",
+    "reglagesAide": "Démonstration, journal, sécurité",
+    "verifies": "Soignants vérifiés",
+    "entraide": "Questions ouvertes (entraide)",
+    "partages": "{n} partages d'expérience",
+    "brouillons": "{n} brouillon(s)",
+    "diffusionAide": "Messages aux soignants et aux familles",
+    "regions": "Régions / provinces",
+    "districts": "Districts sanitaires",
+    "formations": "Formations sanitaires",
+    "villes": "Villes",
+    "quartiersAttente": "Quartiers proposés à valider",
+    "demandes7j": "{n} demandes d'aide sur 7 jours",
+    "journal": "Actions journalisées (7 j)",
+    "journalAide": "Chaque décision est signée et datée"
+  },
+  "terr": {
+    "intro": "La carte du pays telle que l'application la connaît : régions, villes, districts et formations sanitaires. Toute création ou correction est journalisée à votre nom et visible par tous dès le rafraîchissement suivant.",
+    "regions": "Régions",
+    "villes": "Villes",
+    "districts": "Districts",
+    "formations": "Formations",
+    "rattachement": "Ville → district",
+    "nouvelleRegion": "Nouvelle région",
+    "nomRegion": "Nom de la région (français)",
+    "nomArabe": "Nom en arabe",
+    "code": "Code",
+    "codeAide": "2 à 6 lettres, unique (ex. : NDJ). Non modifiable ensuite.",
+    "ordre": "Ordre d'affichage",
+    "ordreAide": "Plus petit = plus haut dans les listes (100 par défaut).",
+    "pasDeSuppression": "Une région ne se supprime pas depuis l'application : ses villes et leurs demandes en dépendent.",
+    "nbVilles": "{n} ville(s)",
+    "nouvelleVille": "Nouvelle ville",
+    "nomVille": "Nom de la ville (français)",
+    "chefLieu": "Chef-lieu de la région",
+    "sansDistrict": "Sans district",
+    "codeInvalide": "Le code doit faire 2 à 6 lettres ou chiffres.",
+    "codeExistant": "Ce code existe déjà : choisissez-en un autre.",
+    "ouvrir": "Gérer le territoire (régions, districts, formations, villes)"
   }
 }

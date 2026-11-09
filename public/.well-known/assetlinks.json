@@ -1,8 +1,0 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.afiyatchad.app",
-    "sha256_cert_fingerprints": ["84:FC:B9:F1:EF:FD:11:C1:DC:07:B5:54:CD:5B:1E:A1:AD:17:CD:B2:E4:CF:1E:A1:73:2C:81:31:84:83:17:73"]
-  }
-}]

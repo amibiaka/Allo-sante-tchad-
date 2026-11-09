@@ -13,7 +13,7 @@ import { libelleZone } from '../components/zone'
 import { ListeCentres } from '../components/centres'
 
 export default function Annuaire({ requete }) {
-  const { t, nom } = useLangue()
+  const { t, nom, langue } = useLangue()
   /* Deux volets : les soignants inscrits sur la plateforme, et la liste
      officielle des centres de sante et hopitaux du ministere. */
   const ongletDemande = requete?.get('onglet') === 'centres' ? 'centres' : 'soignants'
@@ -59,6 +59,10 @@ export default function Annuaire({ requete }) {
   return (
     <div>
       <Entete titre={t('annuaire.titre')} sousTitre={zoneTexte || undefined} />
+
+      {liste?.horsLigne && (
+        <div className="mb-3"><Alerte ton="attention">{t('commun.donneesHorsLigne', { date: new Date(liste.horsLigne).toLocaleDateString(langue === 'ar' ? 'ar' : 'fr') })}</Alerte></div>
+      )}
 
       <div className="mb-3 flex gap-2">
         {[['soignants', '🩺 ' + t('annuaire.voletSoignants')], ['centres', '🏥 ' + t('annuaire.voletCentres')]].map(([v, l]) => (

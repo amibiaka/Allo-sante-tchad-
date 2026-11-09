@@ -3,7 +3,7 @@ import { useRoute, correspond } from './lib/router'
 import { CONFIG } from './lib/config'
 import { appliquerModeLeger } from './lib/net'
 import { Chargement } from './components/base'
-import { BandeauDemo, BandeauLangueEssai, PropositionInstallation } from './components/chrome'
+import { BandeauDemo, BandeauLangueEssai, PropositionInstallation, LectureVocale } from './components/chrome'
 
 const Accueil          = lazy(() => import('./pages/Accueil'))
 const DemandeAide      = lazy(() => import('./pages/DemandeAide'))
@@ -53,7 +53,7 @@ export default function App() {
     return (
       <Cadre>
         <Suspense fallback={<Chargement />}>
-          <Admin sousChemin={chemin.slice(racineAdmin.length) || '/'} />
+          <Admin sousChemin={chemin.slice(racineAdmin.length) || '/'} requete={params} />
         </Suspense>
       </Cadre>
     )
@@ -63,7 +63,7 @@ export default function App() {
     const p = correspond(motif, chemin)
     if (p) {
       return (
-        <Cadre>
+        <Cadre lecture={!motif.startsWith('/pro')} chemin={chemin}>
           <Suspense fallback={<Chargement />}>
             <Composant {...p} requete={params} />
           </Suspense>
@@ -73,7 +73,7 @@ export default function App() {
   }
 
   return (
-    <Cadre>
+    <Cadre lecture chemin={chemin}>
       <Suspense fallback={<Chargement />}>
         <Accueil />
       </Suspense>
@@ -81,12 +81,13 @@ export default function App() {
   )
 }
 
-function Cadre({ children }) {
+function Cadre({ children, lecture, chemin }) {
   return (
     <div className="mx-auto min-h-screen max-w-lg bg-sable-100">
       <BandeauLangueEssai />
       <BandeauDemo />
       <main className="px-4 pb-8 pt-3">{children}</main>
+      {lecture && <LectureVocale chemin={chemin} />}
       <PropositionInstallation />
     </div>
   )

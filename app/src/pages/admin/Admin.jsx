@@ -19,10 +19,12 @@ import { TableauInstitution, SectionValidations, SectionPublications, SectionCam
 import SectionStatistiques from './statistiques'
 import SectionDeontologie from './deontologie'
 import SectionDiffusion from './diffusion'
+import SectionTerritoire from './territoire'
+import Pilotage from './pilotage'
 
 const CLE_SESSION = 'ast.admin.porte'
 
-export default function Admin({ sousChemin }) {
+export default function Admin({ sousChemin, requete }) {
   const { t } = useLangue()
   const [porte, setPorte] = useState(() => !CONFIG.cleAdmin || sessionStorage.getItem(CLE_SESSION) === '1')
   const [session, setSession] = useState(undefined)
@@ -46,7 +48,7 @@ export default function Admin({ sousChemin }) {
   const estAdmin = session && session.profil.role !== 'pro'
   if (!estAdmin) return <ConnexionAdmin surConnexion={charger} deconnecte={!!session} />
 
-  return <Coque session={session} sousChemin={sousChemin} surChangement={charger} />
+  return <Coque session={session} sousChemin={sousChemin} requete={requete} surChangement={charger} />
 }
 
 /* --- 1. Porte d'entree (cle partagee) ------------------------------- */
@@ -125,6 +127,8 @@ function ConnexionAdmin({ surConnexion, deconnecte }) {
             <p className="mb-2 text-[13px] font-bold text-nil-900/70">🧪 {t('demo.entrerComme')}</p>
             <div className="space-y-2">
               {[['66000000', t('admin.role.super_admin')],
+                ['66000004', t('admin.role.ordre_medecins')],
+                ['66000005', t('admin.role.centre_numerique')],
                 ['66000002', t('admin.role.admin_ville') + " — N'Djamena"]].map(([num, libelle]) => (
                 <Bouton key={num} variante="secondaire" taille="petit" className="w-full" enCours={enCours}
                         onClick={async () => {
@@ -147,11 +151,15 @@ function ConnexionAdmin({ surConnexion, deconnecte }) {
 /* --- 3. Coque du back-office ---------------------------------------- */
 /* Chaque section porte la liste des roles qui la voient. Les
    administrateurs operationnels (ville, province, national) gardent
-   leurs ecrans ; les institutions n'ont que les leurs. */
+   leurs ecrans ; les institutions n'ont que les leurs. Depuis novembre
+   2026 les deux Ordres gerent aussi les campagnes et le territoire
+   (regions, districts, formations, villes), comme le programme national
+   et l'autorite nationale (fichier SQL 17). */
 const ADMINS = ['admin_ville', 'admin_province', 'super_admin']
 const AUTORITES = ['autorite_nationale', 'autorite_provinciale']
 const ORDRES = ['ordre_medecins', 'ordre_pharmaciens']
 const TOUS = [...ADMINS, ...AUTORITES, ...ORDRES, 'centre_numerique']
+const TERRITOIRE = ['super_admin', 'autorite_nationale', 'centre_numerique', ...ORDRES]
 const SECTIONS = [
   ['/', 'tableau', '🏠', TOUS],
   ['/statistiques', 'statistiques', '📊', TOUS],
@@ -160,19 +168,20 @@ const SECTIONS = [
   ['/veille', 'veille', '📈', [...ADMINS, ...AUTORITES, 'centre_numerique']],
   ['/alertes', 'alertes', '🚨', [...ADMINS, ...AUTORITES, 'centre_numerique']],
   ['/diffusion', 'diffusion', '📣', ['super_admin', ...AUTORITES, ...ORDRES, 'centre_numerique']],
-  ['/campagnes', 'campagnes', '💉', ['super_admin', ...AUTORITES, 'centre_numerique']],
+  ['/campagnes', 'campagnes', '💉', ['super_admin', ...AUTORITES, ...ORDRES, 'centre_numerique']],
   ['/publications', 'publications', '📢', ['super_admin', ...AUTORITES, ...ORDRES, 'centre_numerique']],
+  ['/territoire', 'territoire', '🗺️', TERRITOIRE],
   ['/demandes', 'demandes', '🆘', ADMINS],
   ['/soignants', 'soignants', '🩺', ADMINS],
-  ['/geographie', 'geographie', '🗺️', ADMINS],
-  ['/sante', 'sante', '🏥', ['super_admin', ...AUTORITES, 'centre_numerique']],
+  ['/geographie', 'geographie', '🏘️', ADMINS],
+  ['/sante', 'sante', '🏥', ['super_admin', ...AUTORITES, ...ORDRES, 'centre_numerique']],
   ['/moderation', 'moderation', '🛡️', ADMINS],
   ['/numeros', 'numeros', '☎️', ADMINS],
   ['/equipe', 'equipe', '👥', ['super_admin', 'centre_numerique']],
   ['/reglages', 'reglages', '⚙️', ['super_admin', 'centre_numerique']],
 ]
 
-function Coque({ session, sousChemin, surChangement }) {
+function Coque({ session, sousChemin, requete, surChangement }) {
   const { t } = useLangue()
   const base = '/' + CONFIG.cheminAdmin
   const role = session.profil.role
@@ -209,14 +218,20 @@ function Coque({ session, sousChemin, surChangement }) {
         })}
       </nav>
 
-      {sousChemin === '/' && (admin ? <TableauAdmin session={session} /> : <TableauInstitution session={session} />)}
+      {sousChemin === '/' && (
+        <>
+          {role !== 'admin_ville' && <Pilotage session={session} voit={voit} />}
+          {admin ? <TableauAdmin session={session} /> : <TableauInstitution session={session} />}
+        </>
+      )}
       {sousChemin === '/statistiques' && <SectionStatistiques session={session} />}
       {sousChemin === '/deontologie' && voit('deontologie') && <SectionDeontologie session={session} />}
       {sousChemin === '/diffusion' && voit('diffusion') && <SectionDiffusion session={session} />}
       {sousChemin === '/validations' && voit('validations') && <SectionValidations />}
       {sousChemin === '/veille' && voit('veille') && <Veille />}
       {sousChemin === '/alertes' && voit('alertes') && <SectionAlertes />}
-      {sousChemin === '/campagnes' && voit('campagnes') && <SectionCampagnes session={session} />}
+      {sousChemin === '/campagnes' && voit('campagnes') && <SectionCampagnes session={session} requete={requete} />}
+      {sousChemin === '/territoire' && voit('territoire') && <SectionTerritoire requete={requete} />}
       {sousChemin === '/publications' && voit('publications') && <SectionPublications session={session} />}
       {sousChemin === '/demandes' && admin && <SectionDemandes />}
       {sousChemin === '/soignants' && admin && <SectionSoignants />}
@@ -224,7 +239,7 @@ function Coque({ session, sousChemin, surChangement }) {
       {sousChemin === '/sante' && voit('sante') && <SectionSante session={session} />}
       {sousChemin === '/moderation' && admin && <SectionModeration />}
       {sousChemin === '/numeros' && admin && <SectionNumeros />}
-      {sousChemin === '/equipe' && voit('equipe') && <SectionEquipe session={session} />}
+      {sousChemin === '/equipe' && voit('equipe') && <SectionEquipe session={session} requete={requete} />}
       {sousChemin === '/reglages' && voit('reglages') && <SectionReglages session={session} />}
     </div>
   )

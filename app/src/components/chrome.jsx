@@ -307,6 +307,72 @@ export function InstallerPWA() {
   )
 }
 
+/* Lecture a voix haute de l'ecran courant, pour les personnes qui lisent
+   mal ou pas : la synthese vocale du telephone lit le texte visible de la
+   page (rien ne part sur le reseau, aucune cle, fonctionne hors ligne si
+   la voix est installee). Francais, anglais et arabe ; l'arabi tchadi en
+   lettres latines n'a pas de voix : le bouton se cache. Un second appui
+   arrete la lecture ; changer de page l'arrete aussi. */
+const VOIX = { fr: 'fr-FR', en: 'en-US', ar: 'ar-SA' }
+export function LectureVocale({ chemin }) {
+  const { t, langue, dir } = useLangue()
+  const [actif, setActif] = useState(false)
+  const dispo = typeof window !== 'undefined' && 'speechSynthesis' in window && !!VOIX[langue]
+
+  useEffect(() => {
+    if (!dispo) return
+    window.speechSynthesis.cancel(); setActif(false)
+  }, [chemin, langue, dispo])
+  useEffect(() => () => { try { window.speechSynthesis?.cancel() } catch { /* ignore */ } }, [])
+  if (!dispo) return null
+
+  const texteVisible = () => {
+    const racine = document.querySelector('main') || document.body
+    const morceaux = []
+    const marche = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT, {
+      acceptNode(n) {
+        const el = n.parentElement
+        if (!el || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT
+        if (el.closest('script,style,[aria-hidden="true"],.sans-lecture,[data-lecture="non"]')) return NodeFilter.FILTER_REJECT
+        const st = getComputedStyle(el)
+        if (st.display === 'none' || st.visibility === 'hidden') return NodeFilter.FILTER_REJECT
+        return NodeFilter.FILTER_ACCEPT
+      },
+    })
+    let n
+    while ((n = marche.nextNode())) morceaux.push(n.nodeValue.replace(/\s+/g, ' ').trim())
+    // Les emojis et les pictogrammes de l'interface n'ont rien a dire.
+    return morceaux.join('. ').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').replace(/\.\s*\./g, '.').slice(0, 6000)
+  }
+
+  const basculer = () => {
+    const synth = window.speechSynthesis
+    if (actif) { synth.cancel(); setActif(false); return }
+    const texte = texteVisible()
+    if (!texte) return
+    synth.cancel()
+    const u = new SpeechSynthesisUtterance(texte)
+    u.lang = VOIX[langue]
+    const voix = synth.getVoices().find((v) => v.lang && v.lang.toLowerCase().startsWith(langue))
+    if (voix) u.voice = voix
+    u.rate = 0.95
+    u.onend = () => setActif(false)
+    u.onerror = () => setActif(false)
+    setActif(true)
+    synth.speak(u)
+  }
+
+  return (
+    <button type="button" onClick={basculer} aria-pressed={actif} data-lecture="non"
+            aria-label={t(actif ? 'voix.arreter' : 'voix.lire')} title={t(actif ? 'voix.arreter' : 'voix.lire')}
+            className={`sans-impression fixed bottom-4 z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-lg
+              ${dir === 'rtl' ? 'left-4' : 'right-4'}
+              ${actif ? 'border-nil-600 bg-nil-600 text-white' : 'border-sable-300 bg-white text-nil-700'}`}>
+      <span aria-hidden="true" className="text-xl leading-none">{actif ? '⏹' : '🔊'}</span>
+    </button>
+  )
+}
+
 export function PiedDePage() {
   const { t } = useLangue()
   return (

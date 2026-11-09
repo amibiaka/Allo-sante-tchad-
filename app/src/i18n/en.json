@@ -42,7 +42,8 @@
     "jours": "days",
     "de": "of",
     "erreurReseau": "Not possible right now. Check your connection.",
-    "accueil": "Home"
+    "accueil": "Home",
+    "donneesHorsLigne": "No network: showing the latest information saved on this phone ({date})."
   },
   "accueil": {
     "aide": "I need help",
@@ -392,7 +393,7 @@
     "tableau": "Dashboard",
     "demandes": "Requests",
     "soignants": "Health workers",
-    "geographie": "Geography",
+    "geographie": "Neighbourhoods",
     "moderation": "Moderation",
     "numeros": "Emergency numbers",
     "equipe": "Team",
@@ -496,7 +497,8 @@
     "mettreDemo": "Set as demo",
     "sortirDemo": "Leave demo",
     "identifiant": "Phone or e-mail address",
-    "identifiantAide": "8-digit number for accounts opened by phone, e-mail address for management accounts."
+    "identifiantAide": "8-digit number for accounts opened by phone, e-mail address for management accounts.",
+    "territoire": "Territory"
   },
   "veille": {
     "fraicheurTitre": "Last request received",
@@ -798,7 +800,35 @@
     "clore": "Close",
     "casClos": "Request closed.",
     "messageWhatsapp": "Hello, I am answering from Afiya about your request {code}: {titre}",
-    "contactIndisponible": "The contact is not available for this request."
+    "contactIndisponible": "The contact is not available for this request.",
+    "ongletQuestions": "Questions",
+    "ongletSavoir": "Experience and protocols",
+    "introSavoir": "The collective memory of Chad's health workers: field experience, what to do, organisations that work. Any active health worker can post and comment. Threads stay readable and searchable.",
+    "partager": "Share an experience or a protocol",
+    "rechercher": "Search threads (word, symptom, place…)",
+    "recents": "Recent",
+    "aucunSavoir": "No posts yet",
+    "aucunSavoirDetail": "Be the first: what you learned in the field can help a colleague across the country.",
+    "genreTitre": "What are you posting?",
+    "genre": {
+      "question": "A question",
+      "partage": "An experience report",
+      "protocole": "A protocol / what to do"
+    },
+    "genreDetail": {
+      "question": "You ask a doctor for advice.",
+      "partage": "You describe what worked, or not, and what you take from it.",
+      "protocole": "A clear step-by-step procedure others can apply."
+    },
+    "titreSavoir": "Title",
+    "titreSavoirExemple": "E.g.: Managing severe malaria without injectable artesunate",
+    "descriptionSavoir": "Content",
+    "descriptionSavoirAide": "Context, what you did, outcome, what you advise. Never a patient name or a phone number.",
+    "commentaires": "Comments",
+    "pasEncoreCommentaire": "No comments yet.",
+    "commentairePlaceholder": "Your comment, your experience, a detail…",
+    "commenter": "Comment",
+    "publierSavoir": "Publish"
   },
   "inst": {
     "bienvenue": {
@@ -818,7 +848,8 @@
       "campagnes": "ongoing campaigns",
       "publications": "publications online",
       "casOuverts": "open peer-support requests",
-      "doses": "doses declared (30 d)"
+      "doses": "doses declared (30 d)",
+      "titre": "Today in your area"
     },
     "journalNote": "Every decision taken here (approval, publication, triage of a report, role assignment) is written to the log with its author and date.",
     "validationsIntro": "You only see registrations your institution can approve. Approving shows the \"Verified\" badge to the public; extending gives 45 more days.",
@@ -1212,5 +1243,60 @@
     "ouvrirGestion": "Open the management space",
     "ouvrirPro": "Open the health-worker space",
     "cleAdminNote": "The management space also asks for the site access key, which the administrator gives you."
+  },
+  "voix": {
+    "lire": "Read the page aloud",
+    "arreter": "Stop reading"
+  },
+  "pilotage": {
+    "groupe": {
+      "comptes": "Accounts and access",
+      "soignants": "Health workers",
+      "communication": "Communication",
+      "territoire": "Territory",
+      "donnees": "Data and surveillance"
+    },
+    "comptesGestion": "Management accounts",
+    "comptesAide": "Programme, Orders, authorities, administrators",
+    "inactifs": "{n} disabled",
+    "nouveauCompte": "Create a management account",
+    "reglagesAide": "Demo, log, security",
+    "verifies": "Verified health workers",
+    "entraide": "Open questions (peer support)",
+    "partages": "{n} experience posts",
+    "brouillons": "{n} draft(s)",
+    "diffusionAide": "Messages to health workers and families",
+    "regions": "Regions / provinces",
+    "districts": "Health districts",
+    "formations": "Health facilities",
+    "villes": "Towns",
+    "quartiersAttente": "Suggested neighbourhoods to approve",
+    "demandes7j": "{n} help requests in 7 days",
+    "journal": "Logged actions (7 d)",
+    "journalAide": "Every decision is signed and dated"
+  },
+  "terr": {
+    "intro": "The country map as the app knows it: regions, towns, health districts and facilities. Every creation or correction is logged under your name and visible to everyone at the next refresh.",
+    "regions": "Regions",
+    "villes": "Towns",
+    "districts": "Districts",
+    "formations": "Facilities",
+    "rattachement": "Town → district",
+    "nouvelleRegion": "New region",
+    "nomRegion": "Region name (French)",
+    "nomArabe": "Name in Arabic",
+    "code": "Code",
+    "codeAide": "2 to 6 letters, unique (e.g. NDJ). Cannot be changed later.",
+    "ordre": "Display order",
+    "ordreAide": "Smaller = higher in lists (100 by default).",
+    "pasDeSuppression": "A region cannot be deleted from the app: its towns and their requests depend on it.",
+    "nbVilles": "{n} town(s)",
+    "nouvelleVille": "New town",
+    "nomVille": "Town name (French)",
+    "chefLieu": "Regional capital",
+    "sansDistrict": "No district",
+    "codeInvalide": "The code must be 2 to 6 letters or digits.",
+    "codeExistant": "This code already exists: choose another one.",
+    "ouvrir": "Manage the territory (regions, districts, facilities, towns)"
   }
 }

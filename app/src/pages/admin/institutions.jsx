@@ -23,7 +23,6 @@ import { ilYA, dateCourte, joursRestants, versCSV, telechargerTexte } from '../.
 import { naviguer } from '../../lib/router'
 import { Bouton, Champ, Selecteur, Alerte, Chargement, Vide, Modale, Case } from '../../components/base'
 import { BadgePro } from '../../components/pro'
-import SectionReferentiel from './referentiel'
 
 function useAction() {
   const { t } = useLangue()
@@ -53,27 +52,18 @@ export function TableauInstitution({ session }) {
       <p className="text-[12px] leading-tight opacity-70">{l}</p>
     </button>
   )
+  /* Les tuiles de pilotage (comptes, soignants, communication,
+     territoire, donnees) sont au-dessus, dans <Pilotage/> ; ici ne
+     restent que les chiffres du jour propres au perimetre. */
   return (
     <div>
-      <div className="mb-3"><Alerte ton="info">{t('inst.bienvenue.' + role)}</Alerte></div>
+      <h2 className="mb-1.5 text-sm font-bold text-nil-900/60">📅 {t('inst.kpi.titre')}</h2>
       <div className="grid grid-cols-2 gap-2">
-        {['ordre_medecins', 'ordre_pharmaciens', 'autorite_nationale', 'autorite_provinciale', 'super_admin'].includes(role) && (
-          <K v={s.a_valider} l={t('inst.kpi.aValider')} vers="/validations" ton="attention" />)}
         {['autorite_nationale', 'autorite_provinciale', 'super_admin', 'centre_numerique'].includes(role) && (
           <K v={s.evenements_nouveaux} l={t('inst.kpi.evenements')} vers="/alertes" ton="attention" />)}
-        {['autorite_nationale', 'autorite_provinciale', 'super_admin'].includes(role) && (
-          <K v={s.campagnes_actives} l={t('inst.kpi.campagnes')} vers="/campagnes" />)}
-        <K v={s.publications} l={t('inst.kpi.publications')} vers="/publications" />
         <K v={s.cas_ouverts} l={t('inst.kpi.casOuverts')} vers="/statistiques" />
         <K v={s.doses_declarees_30j} l={t('inst.kpi.doses')} vers="/statistiques" />
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Bouton variante="secondaire" onClick={() => naviguer(base + '/statistiques')}>📊 {t('admin.statistiques')}</Bouton>
-        {['ordre_medecins', 'ordre_pharmaciens', 'super_admin'].includes(role)
-          ? <Bouton variante="secondaire" onClick={() => naviguer(base + '/deontologie')}>⚖️ {t('admin.deontologie')}</Bouton>
-          : <Bouton variante="secondaire" onClick={() => naviguer(base + '/diffusion')}>📣 {t('admin.diffusion')}</Bouton>}
-      </div>
-      <p className="aide mt-4">{t('inst.journalNote')}</p>
     </div>
   )
 }
@@ -234,19 +224,24 @@ function FormPublication({ f, setF, geo, national, nom, t, surEnregistrer, surSu
 }
 
 /* =================== CAMPAGNES ===================================== */
-export function SectionCampagnes({ session }) {
+export function SectionCampagnes({ session, requete }) {
   const { t, nom } = useLangue()
   const { lancer, Message } = useAction()
   const [liste, setListe] = useState(null)
   const [geo, setGeo] = useState(null)
   const [edition, setEdition] = useState(null)
-  const national = ['super_admin', 'autorite_nationale'].includes(session.profil.role)
+  // National : tout le pays ou une province au choix. Les Ordres et le
+  // programme national sont nationaux par nature (fichier SQL 17).
+  const national = ['super_admin', 'autorite_nationale', 'ordre_medecins', 'ordre_pharmaciens', 'centre_numerique'].includes(session.profil.role)
   const auj = new Date().toISOString().slice(0, 10)
 
   const charger = useCallback(() => { db.adminCampagnes().then(setListe).catch(() => setListe([])) }, [])
   useEffect(() => { charger(); chargerGeo().then(setGeo) }, [charger])
 
   const vide = () => ({ nom: '', vaccins: [], age_min_mois: 0, age_max_mois: 59, provinceCode: national ? '' : (geo?.provinces.find((p) => p.id === session.profil.province_id)?.code || ''), debut: auj, fin: auj, lieux: '', message: '', statut: 'brouillon' })
+  // Tuile « ➕ nouvelle campagne » du pilotage : le formulaire s'ouvre seul.
+  const ouvrirDirect = requete?.get?.('nouveau') === '1'
+  useEffect(() => { if (ouvrirDirect && geo && !edition) setEdition(vide()) }, [ouvrirDirect, geo]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -459,7 +454,11 @@ export function SectionSante({ session }) {
         </div>
       )}
       <p className="aide mt-3">{t('inst.santeCorrections')}</p>
-      {['super_admin', 'autorite_nationale', 'centre_numerique'].includes(session.profil.role) && <SectionReferentiel />}
+      {['super_admin', 'autorite_nationale', 'centre_numerique', 'ordre_medecins', 'ordre_pharmaciens'].includes(session.profil.role) && (
+        <Bouton className="mt-3 w-full" variante="secondaire" onClick={() => naviguer('/' + CONFIG.cheminAdmin + '/territoire?onglet=districts')}>
+          🗺️ {t('terr.ouvrir')}
+        </Bouton>
+      )}
     </div>
   )
 }

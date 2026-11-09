@@ -511,13 +511,13 @@ export function SectionNumeros() {
 const ROLES_GESTION = ['centre_numerique', 'ordre_medecins', 'ordre_pharmaciens', 'autorite_nationale', 'autorite_provinciale', 'admin_province', 'admin_ville', 'super_admin']
 const MODES_ACCES = ['invitation', 'lien', 'mot_de_passe']
 
-export function SectionEquipe({ session }) {
+export function SectionEquipe({ session, requete }) {
   const { t, nom } = useLangue()
   const superAdmin = session?.profil?.role === 'super_admin'
   const [liste, setListe] = useState(null)
   const [geo, setGeo] = useState(null)
   const [choisi, setChoisi] = useState(null)
-  const [inviter, setInviter] = useState(false)
+  const [inviter, setInviter] = useState(superAdmin && requete?.get?.('nouveau') === '1')
 
   const charger = useCallback(() => {
     setListe(null)

@@ -67,6 +67,7 @@ de ces fichiers **l'un après l'autre**, en cliquant sur **Run** à chaque fois 
 | 11 | `supabase/14a_types_soignants.sql` **seul**, puis `14_gestion_et_statistiques.sql` | Espace de gestion : droits des Ordres et du programme national, démonstration isolée, statistiques (résumé, requête libre, suivi des soignants, contacts de diffusion), transcription vocale |
 | 12 | `supabase/15_jeu_demonstration.sql` | *Facultatif, pour une présentation* — ~1 600 lignes fictives (61 soignants, 320 demandes, ordonnances, vaccinations, entraide…) isolées et effaçables en un clic |
 | 13 | `supabase/16_comptes_de_gestion.sql` | Comptes de gestion par adresse e-mail (adresse sur le profil) ; la création se fait ensuite depuis l'écran Équipe |
+| 14 | `supabase/17_pilotage_etendu.sql` | Pilotage étendu : les Ordres gèrent aussi campagnes et territoire ; régions créées depuis l'application ; entraide élargie au partage de connaissances ; résumé de pilotage des tableaux de bord |
 
 Les autres fichiers du dossier servent plus tard : `04_effacer_demo.sql` (avant
 la mise en service réelle), `05_creer_administrateur.sql` (étape 5 ci-dessous)
@@ -216,6 +217,27 @@ Administrateurs opérationnels :
 - **Administrateur de province** — ne voit que sa province.
 - **Administrateur de ville** — ne voit que sa ville.
 
+La première page du back-office est un **tableau de pilotage** (novembre
+2026) : des tuiles groupées par thème, avec le chiffre du jour et un
+raccourci vers l'écran ou le formulaire correspondant.
+- *Comptes et accès* : les comptes de gestion (programme, Ordres, autorités,
+  administrateurs), « ➕ créer un compte » (par adresse e-mail, invitation ou
+  mot de passe provisoire), les réglages.
+- *Soignants* : à valider, vérifiés, déontologie, entraide.
+- *Communication* : campagnes (« ➕ nouvelle campagne »), publications,
+  diffusion.
+- *Territoire* : régions/provinces, districts sanitaires, formations
+  sanitaires, villes, quartiers proposés. L'écran **Territoire** permet de
+  créer et corriger une région, une ville (position, chef-lieu, district),
+  un district, une formation sanitaire. Une région ou une ville ne se
+  supprime jamais depuis l'application (ses demandes en dépendent).
+- *Données et veille* : statistiques, veille, signalements, journal.
+
+Le super-administrateur, le programme national, l'autorité nationale **et
+les deux Ordres** disposent des écrans Campagnes et Territoire
+(`supabase/17_pilotage_etendu.sql`). Chaque tuile ne s'affiche qu'aux rôles
+qui ont le droit correspondant ; la base le vérifie de toute façon.
+
 Institutions (novembre 2026), chacune avec ses seuls écrans :
 - **Autorité nationale** (ministère) et **délégation provinciale** — veille en
   temps réel, signalements communautaires à trier, campagnes de vaccination,
@@ -322,6 +344,23 @@ connexion (clé USB, pièce jointe, partage WhatsApp).
 
 ---
 
+### Partage de connaissances entre soignants (novembre 2026)
+
+L'espace **Entraide** de l'espace soignant a deux volets : **Questions** (un
+soignant isolé demande conseil, les médecins répondent, suite possible sur
+WhatsApp si l'auteur l'accepte) et **Partages et protocoles** (retours
+d'expérience, conduites à tenir, organisations qui marchent). Tout soignant
+actif peut publier et commenter un partage ; les fils restent lisibles une
+fois clos et se retrouvent par la **recherche** (titre et texte). Jamais de
+nom de patient ni de numéro : la base refuse un texte qui en contient.
+
+### Lecture à voix haute (novembre 2026)
+
+Sur les écrans du public, un bouton 🔊 lit la page avec la voix du téléphone
+(français, anglais, arabe). Rien ne part sur le réseau, aucune clé n'est
+nécessaire, et cela fonctionne hors ligne si la voix est installée sur le
+téléphone. Pour les personnes qui lisent mal ou pas.
+
 ## Ce qui a été fait pour le bas débit
 
 - **Page d'accueil ≈ 60 Ko compressés**, tout compris. `npm run check:size` le
@@ -333,6 +372,14 @@ connexion (clé USB, pièce jointe, partage WhatsApp).
   gardé en mémoire.
 - **Service worker** : la deuxième ouverture est quasi instantanée, et
   l'interface reste consultable hors ligne.
+- **Mémoire hors ligne** : l'annuaire de la ville, les numéros d'urgence, les
+  campagnes et les publications déjà consultés sont gardés 7 jours dans le
+  téléphone et ressortis, datés, quand le réseau manque. Aucune donnée
+  médicale personnelle n'y entre.
+- **Installation sur Android sans magasin** : depuis Chrome, « Installer
+  l'application » (ou le bouton proposé sur l'accueil) ajoute Afiya à l'écran
+  d'accueil ; la coque pèse quelques dizaines de kilo-octets et s'ouvre
+  ensuite sans réseau. Sur iPhone, « Partager → Sur l'écran d'accueil ».
 - **Mode économie de données** détecté automatiquement (2G ou « économiseur de
   données » activé) : carte et images désactivées, réactivables d'un geste.
 - **Temps réel par interrogation adaptative** — 10 s écran allumé, 20 s en 2G,

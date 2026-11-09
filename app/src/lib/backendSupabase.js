@@ -182,6 +182,49 @@ async function rafraichirRef() {
   await init()
 }
 
+
+/* --- Memoire hors ligne des lectures publiques -------------------------
+   Le service worker ne garde volontairement aucune donnee medicale ; en
+   revanche l'annuaire d'une ville, les numeros d'urgence, les campagnes
+   et les publications sont des informations publiques qui restent
+   utiles sans reseau. On garde la derniere reponse de chaque requete
+   (au plus 40 entrees, 7 jours) et on la ressert si le reseau echoue,
+   marquee horsLigne pour que l'ecran puisse le dire. */
+const PREFIXE_MEMO = 'ast.memo.'
+const MEMO_MAX = 40
+const MEMO_DUREE = 7 * 864e5
+function memoLire(cle) {
+  try {
+    const x = JSON.parse(localStorage.getItem(PREFIXE_MEMO + cle) || 'null')
+    if (!x || Date.now() - x.le > MEMO_DUREE) return null
+    return x
+  } catch { return null }
+}
+function memoEcrire(cle, valeur) {
+  try {
+    const cles = Object.keys(localStorage).filter((k) => k.startsWith(PREFIXE_MEMO))
+    if (cles.length >= MEMO_MAX) {
+      cles.map((k) => { try { return [k, JSON.parse(localStorage.getItem(k)).le || 0] } catch { return [k, 0] } })
+          .sort((a, b) => a[1] - b[1]).slice(0, cles.length - MEMO_MAX + 1)
+          .forEach(([k]) => localStorage.removeItem(k))
+    }
+    localStorage.setItem(PREFIXE_MEMO + cle, JSON.stringify({ le: Date.now(), valeur }))
+  } catch { /* quota plein ou stockage refuse : on vit sans */ }
+}
+async function avecMemoire(cle, fn) {
+  try {
+    const v = await fn()
+    memoEcrire(cle, v)
+    return v
+  } catch (e) {
+    const m = memoLire(cle)
+    if (!m) throw e
+    const v = m.valeur
+    if (v && typeof v === 'object') { try { Object.defineProperty(v, 'horsLigne', { value: m.le, enumerable: false }) } catch { /* ignore */ } }
+    return v
+  }
+}
+
 /* --- Selections imbriquees ------------------------------------------- */
 /* Deux selections distinctes : la note interne de moderation et la date
    de fin de probation ne doivent pas partir dans l'annuaire public. */
@@ -263,7 +306,8 @@ export async function annuaire({ villeCode, type, recherche, secours } = {}) {
   if (secours === true) p.service_officiel = 'is.true'
   if (secours === false) p.service_officiel = 'is.false'
   if (recherche) p.or = `(nom.ilike.*${echappe(recherche)}*,specialite.ilike.*${echappe(recherche)}*)`
-  return (await requete('/professionnels' + q(p)) || []).map(habiller)
+  return avecMemoire('annuaire:' + JSON.stringify([villeCode || '', type || '', recherche || '', secours ?? '']),
+    async () => (await requete('/professionnels' + q(p)) || []).map(habiller))
 }
 
 export async function detailPro(id) {
@@ -356,7 +400,7 @@ export async function numerosUrgence({ villeCode } = {}) {
   // Sans zone choisie on montre tout : un numero d'hopital verifie vaut
   // mieux qu'un ecran vide au moment ou quelqu'un panique.
   if (v) p.or = `(national.is.true,ville_id.is.null,ville_id.eq.${v.id})`
-  return await requete('/numeros_urgence' + q(p)) || []
+  return avecMemoire('numeros:' + (villeCode || ''), async () => (await requete('/numeros_urgence' + q(p))) || [])
 }
 
 export const statsPubliques = (jours = 30) => rpc('stats_publiques', { p_jours: jours })
@@ -1089,8 +1133,10 @@ export async function publications({ type, limite = 20 } = {}) {
   const p = { select: 'id,type,audience,titre,corps,lien,province_id,auteur_role,publie_le,expire_le',
               order: 'publie_le.desc', limit: String(limite) }
   if (type) p.type = Array.isArray(type) ? 'in.(' + type.join(',') + ')' : 'eq.' + type
-  const l = await requete('/publications' + q(p)) || []
-  return l.map((x) => ({ ...x, province_nom: nomProvince(x.province_id) }))
+  return avecMemoire('publications:' + JSON.stringify([type || '', limite]), async () => {
+    const l = await requete('/publications' + q(p)) || []
+    return l.map((x) => ({ ...x, province_nom: nomProvince(x.province_id) }))
+  })
 }
 
 /* --- Campagnes actives pour une province (null = tout voir) ----------- */
@@ -1099,8 +1145,10 @@ export async function campagnesActives({ provinceCode } = {}) {
   const p = { select: 'id,nom,vaccins,age_min_mois,age_max_mois,province_id,district_ids,debut,fin,lieux,message,statut',
               statut: 'eq.publiee', fin: 'gte.' + new Date().toISOString().slice(0, 10), order: 'debut.asc' }
   if (prov) p.or = `(province_id.is.null,province_id.eq.${prov.id})`
-  const l = await requete('/campagnes_vaccination' + q(p)) || []
-  return l.map((c) => ({ ...c, province_nom: nomProvince(c.province_id) }))
+  return avecMemoire('campagnes:' + (provinceCode || ''), async () => {
+    const l = await requete('/campagnes_vaccination' + q(p)) || []
+    return l.map((c) => ({ ...c, province_nom: nomProvince(c.province_id) }))
+  })
 }
 
 export const declarerVaccin = ({ villeCode, vaccin, dose, ageMois, aLHeure }) =>
@@ -1110,25 +1158,33 @@ export const declarerVaccin = ({ villeCode, vaccin, dose, ageMois, aLHeure }) =>
 export const signalerEvenement = (p) => rpc('signaler_evenement', { p })
 
 /* --- Entraide entre soignants ----------------------------------------- */
-const SEL_CAS = 'id,code,auteur_pro,ville_id,province_id,specialite,urgence,titre,description,whatsapp_ok,statut,nb_reponses,created_at,updated_at,professionnels!entraide_cas_auteur_pro_fkey(nom,type)'
+const SEL_CAS = 'id,code,auteur_pro,ville_id,province_id,specialite,urgence,titre,description,whatsapp_ok,statut,nb_reponses,genre,created_at,updated_at,professionnels!entraide_cas_auteur_pro_fkey(nom,type)'
 const habillerCas = (c) => ({ ...c, auteur_nom: c.professionnels?.nom ?? null, auteur_type: c.professionnels?.type ?? null,
   ville_nom: nomVille(c.ville_id), province_nom: nomProvince(c.province_id) })
 
-export async function casEntraide({ statut, miens = false, limite = 50 } = {}) {
+/* genre : question (conseil demande a un medecin), partage (retour
+   d'experience) ou protocole (conduite a tenir) ; recherche : mots dans
+   le titre ou la description. */
+export async function casEntraide({ statut, miens = false, genre, recherche, limite = 50 } = {}) {
   const p = { select: SEL_CAS, order: 'updated_at.desc', limit: String(limite) }
   if (statut) p.statut = statut === 'actifs' ? 'in.(ouvert,repondu)' : 'eq.' + statut
+  if (genre) p.genre = genre === 'question' ? 'eq.question' : 'in.(partage,protocole)'
+  if (recherche && recherche.trim().length >= 2) {
+    const m = '*' + echappe(recherche) + '*'
+    p.or = `(titre.ilike.${m},description.ilike.${m})`
+  }
   if (miens) { const s = await sessionCourante(); if (s?.pro?.id) p.auteur_pro = 'eq.' + s.pro.id }
   const l = await requete('/entraide_cas' + q(p)) || []
   return l.map(habillerCas)
 }
 
-export async function creerCas({ specialite, urgence, titre, description, whatsappOk }) {
+export async function creerCas({ specialite, urgence, titre, description, whatsappOk, genre = 'question' }) {
   const s = await sessionCourante()
   if (!s?.pro?.id) throw new Error('PAS_DE_FICHE')
   const l = await requete('/entraide_cas' + q({ select: SEL_CAS }), {
     methode: 'POST', entetes: { Prefer: 'return=representation' },
-    corps: { auteur_pro: s.pro.id, specialite: specialite || null, urgence: Number(urgence) || 2,
-             titre, description, whatsapp_ok: !!whatsappOk },
+    corps: { auteur_pro: s.pro.id, specialite: specialite || null, urgence: genre === 'question' ? (Number(urgence) || 2) : 3,
+             titre, description, whatsapp_ok: !!whatsappOk, genre: ['question', 'partage', 'protocole'].includes(genre) ? genre : 'question' },
   })
   return habillerCas(l?.[0])
 }
@@ -1340,6 +1396,45 @@ export async function majVilleDistrict(villeCode, districtId) {
   await rafraichirRef().catch(() => {})
   return true
 }
+
+/* --- Territoire : regions (provinces) et villes ----------------------- */
+/* Les listes viennent du referentiel charge au demarrage (la base, pas
+   le fichier embarque) : une region creee a l'instant apparait donc
+   partout, y compris chez les patients apres rafraichissement. */
+export async function adminProvinces() {
+  const r = referentiel()
+  return r.provinces.map((p) => ({ ...p, nb_villes: r.villes.filter((v) => v.province_id === p.id).length }))
+}
+export async function adminVilles() { return referentiel().villes }
+export async function enregistrerProvince({ id, code, nom, nomAr, ordre }) {
+  const corps = { code: String(code || '').trim().toUpperCase(), nom_fr: String(nom || '').trim(), nom_ar: nomAr?.trim() || null, ordre: ordre === '' || ordre == null ? 100 : Number(ordre) }
+  let l
+  if (id) l = await requete('/provinces' + q({ select: '*', id: 'eq.' + id }), { methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps })
+  else l = await requete('/provinces' + q({ select: '*' }), { methode: 'POST', entetes: { Prefer: 'return=representation' }, corps })
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('region.' + (id ? 'maj' : 'creation'), 'province', l[0].id, { nom: corps.nom_fr, code: corps.code })
+  await rafraichirRef().catch(() => {})
+  return l[0]
+}
+export async function enregistrerVille({ id, provinceCode, nom, nomAr, lat, lng, chefLieu, districtId }) {
+  const p = provinceParCode(provinceCode)
+  if (!p) throw new Error('REFERENTIEL_INDISPONIBLE')
+  const nombre = (x) => (x === '' || x == null ? null : Number(x))
+  const corps = { province_id: p.id, nom_fr: String(nom || '').trim(), nom_ar: nomAr?.trim() || null, lat: nombre(lat), lng: nombre(lng),
+    chef_lieu: !!chefLieu, district_id: districtId ? Number(districtId) : null }
+  let l
+  if (id) {
+    l = await requete('/villes' + q({ select: '*', id: 'eq.' + id }), { methode: 'PATCH', entetes: { Prefer: 'return=representation' }, corps })
+  } else {
+    const code = `${p.code}-${corps.nom_fr.toUpperCase().normalize('NFD').replace(/[^A-Z]/g, '').slice(0, 4) || 'VIL'}${Date.now().toString().slice(-3)}`
+    l = await requete('/villes' + q({ select: '*' }), { methode: 'POST', entetes: { Prefer: 'return=representation' }, corps: { code, ...corps } })
+  }
+  if (!l?.length) throw new Error('HORS_PERIMETRE')
+  journaliser('ville.' + (id ? 'maj' : 'creation'), 'ville', l[0].id, { nom: corps.nom_fr })
+  await rafraichirRef().catch(() => {})
+  return l[0]
+}
+export const pilotageResume = () => rpc('pilotage_resume')
 
 /* --- Exports et voix : fonctions Netlify ------------------------------ */
 /* Le fichier est produit cote serveur (xlsx, docx) a partir de donnees
