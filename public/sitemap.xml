@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- L'application est une page unique : la navigation interne se fait par
+     ancres (#/aide, #/annuaire...), que les moteurs ne referencent pas
+     separement. C'est un choix assume : les liens fonctionnent depuis
+     n'importe quel hebergement, y compris hors ligne. D'ou un plan de site
+     a une seule entree. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://afiyatchad.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

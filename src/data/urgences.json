@@ -1,0 +1,36 @@
+{
+  "avertissement": "Aucun numero court d'urgence tchadien n'a pu etre confirme par une source officielle (les sources publiques se contredisent : 17/18, 2020/1212, 2121/121). Les entrees 'verifie: false' doivent etre TESTEES depuis un telephone tchadien (Airtel et Moov) puis validees dans le back-office avant toute mise en production.",
+  "numeros": [
+    { "id": "chume", "fr": "CHU de la Mère et de l'Enfant — urgences", "ar": "المستشفى الجامعي للأم والطفل — الطوارئ",
+      "tel": "+23563077760", "ville": "N'Djamena", "h24": true, "verifie": true,
+      "source": "Site officiel de l'etablissement (chume-ndjamena.com)" },
+    { "id": "chur", "fr": "CHU La Renaissance — urgences", "ar": "المستشفى الجامعي النهضة — الطوارئ",
+      "tel": "+23566972260", "tel2": "+23522532090", "ville": "N'Djamena", "h24": true, "verifie": true,
+      "source": "Site officiel + France Diplomatie" },
+    { "id": "bonsam", "fr": "CHU Le Bon Samaritain", "ar": "المستشفى الجامعي السامري الصالح",
+      "tel": "+23566366644", "tel2": "+23590485347", "ville": "N'Djamena", "h24": false, "verifie": true,
+      "source": "Site officiel (chu-lebonsamaritain.org)" },
+    { "id": "sosint", "fr": "SOS International — assistance 24h/24", "ar": "إس أو إس الدولية — مساعدة 24/24",
+      "tel": "+23522522501", "ville": "N'Djamena", "h24": true, "verifie": true,
+      "source": "France Diplomatie — Tchad, contacts utiles" },
+    { "id": "police", "fr": "Police (numéro court)", "ar": "الشرطة (رقم قصير)",
+      "tel": "17", "national": true, "h24": true, "verifie": false,
+      "source": "Agregateurs internationaux — NON confirme par une source tchadienne officielle" },
+    { "id": "pompiers", "fr": "Sapeurs-pompiers (numéro court)", "ar": "الإطفاء (رقم قصير)",
+      "tel": "18", "national": true, "h24": true, "verifie": false,
+      "source": "Agregateurs + site de la commune du 1er arrondissement de N'Djamena" },
+    { "id": "pompiers-ndj", "fr": "Sapeurs-pompiers N'Djamena (standard)", "ar": "الإطفاء إنجامينا",
+      "tel": "+23522522555", "ville": "N'Djamena", "h24": true, "verifie": false,
+      "source": "Annonce de la Mairie de N'Djamena reprise par la presse (2021) — a retester" },
+    { "id": "vert-sante", "fr": "Numéro vert santé (Ministère de la Santé)", "ar": "الرقم الأخضر للصحة",
+      "tel": "1313", "national": true, "h24": true, "verifie": false,
+      "source": "Cree en 2020 (call-center ARCEP) — activite actuelle non confirmee" }
+  ],
+  "hopitaux_reference": [
+    { "fr": "Hôpital Général de Référence Nationale (HGRN)", "ville": "N'Djamena", "tel": "+23522514361", "verifie": false },
+    { "fr": "Hôpital de l'Amitié Tchad-Chine", "ville": "N'Djamena", "tel": null, "verifie": false },
+    { "fr": "Hôpital Provincial de Moundou", "ville": "Moundou", "tel": null, "verifie": false },
+    { "fr": "Hôpital Provincial de Sarh", "ville": "Sarh", "tel": null, "verifie": false },
+    { "fr": "CHU d'Abéché", "ville": "Abéché", "tel": null, "verifie": false }
+  ]
+}
